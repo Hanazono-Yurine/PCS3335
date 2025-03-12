@@ -33,6 +33,8 @@ jobs:
           matrix: true
           dir_names: true
           path: relatorios
+          files: |
+            **/**.tex
 
       - name: List all changed files
         run: echo '${{ steps.changed-files.outputs.all_changed_files }}'
