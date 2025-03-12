@@ -3,6 +3,7 @@
 \graphicspath{{images/}{images-desafios/}}
 \usepackage[a4paper, total={7.5in, 10in}]{geometry}
 \usepackage{float} % pra conseguir usar o \begin{figure}[H]
+\usepackage{indentfirst} % pra fazer tab n 1 paragrafos dos capitulos
 % package pra tabela
 \usepackage{multirow}
 \usepackage{array}
@@ -20,9 +21,11 @@
 }
 
 \author{
-	Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
+	Alunos:
+	\\ Rafael Hipólito Rodrigues - N.USP: 14604308
 	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
-	\\ Turma 3 - Bancada A6
+	\\ \\
+	Turma 3 - Bancada A6
 	\\ Professor: Bruno de Carvalho Albertini
 }
 
@@ -41,46 +44,36 @@
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{images/bolsonaroPresidente2028_vulgo_exp1}
+		\caption{Diagrama RTL do VHDL.}
 		\label{fig:bolsonaroPresidente2028_vulgo_exp1}
 	\end{figure}
 	
 	\subsection*{Testes}
-	
-	\begin{itemize}
-		\item Valor em binário das chaves: 00 0000 0000
-		\par Valor hexadecimal nos displays esperado: 000000
-		\par Valor hexadecimal nos displays obtido: 000000 
-		
-		\item Valor em binário das chaves: 00 0000 0001
-		\par Valor hexadecimal nos displays esperado: 100001
-		\par Valor hexadecimal nos displays obtido: 100001 
-		
-		\item Valor em binário das chaves: 00 0000 0010
-		\par Valor hexadecimal nos displays esperado: 200002
-		\par Valor hexadecimal nos displays obtido: 200002 
-		
-		\item Valor em binário das chaves: 00 0000 1111
-		\par Valor hexadecimal nos displays esperado: F0000F
-		\par Valor hexadecimal nos displays obtido: F0000F
-		
-		\item Valor em binário das chaves: 00 0001 0000
-		\par Valor hexadecimal nos displays esperado: F1001F
-		\par Valor hexadecimal nos displays obtido: F1001F
-		
-		\item Valor em binário das chaves: 00 1111 1111
-		\par Valor hexadecimal nos displays esperado: FF00FF
-		\par Valor hexadecimal nos displays obtido: FF00FF
-		
-		\item Valor em binário das chaves: 01 0000 0000
-		\par Valor hexadecimal nos displays esperado: FF11FF
-		\par Valor hexadecimal nos displays obtido: FF11FF
-		
-		\item Valor em binário das chaves: 11 1111 1111
-		\par Valor hexadecimal nos displays esperado: FF33FF
-		\par Valor hexadecimal nos displays obtido: FF33FF
-		
-	\end{itemize}
 
+	\begin{center}
+		\begin{tabular}{ |c|c|c| }
+			\hline
+			Valor dos Switchs(Binário) & Valor esperado(Hexa) & Valor obtido(Hexa) \\
+			\hline
+			00 0000 0000 & 000000 & 000000 \\
+			\hline
+			00 0000 0001 & 100001 & 100001 \\
+			\hline
+			00 0000 0010 & 200002 & 200002 \\
+			\hline
+			00 0000 1111 & F0000F & F0000F \\
+			\hline
+			00 0001 0000 & F1001F & F1001F \\
+			\hline
+			00 1111 1111 & FF00FF & FF00FF \\
+			\hline
+			01 0000 0000 & FF11FF & FF11FF \\
+			\hline
+			11 1111 1111 & FF33FF & FF33FF \\
+			\hline
+		\end{tabular}
+	\end{center}
+	
 	\section*{Desafio}
 	
 	Elaboração de uma entidade ascii2seg que recebe um número binário de 7 bits das chaves e exibe o correspondente ASCII em um display de 7 segmentos.
@@ -109,33 +102,27 @@
 	Devido a necessidade de atribuir 96 valores(quantidade de caracteres ASCII utilizados) diferentes a o sinal de saída, o circuito precisou ficou muito longo.
 	
 	\subsection*{Testes}
-	
-	\begin{itemize}
-		\item Valor em binário das chaves: 011 0000
-		\par Valor hexadecimal no display esperado: 0
-		\par Valor hexadecimal no display obtido: 0 
-		
-		\item Valor em binário das chaves: 011 0001
-		\par Valor hexadecimal no display esperado: 1
-		\par Valor hexadecimal no display obtido: 1 
-		
-		\item Valor em binário das chaves: 0111001
-		\par Valor hexadecimal no display esperado: 9
-		\par Valor hexadecimal no display obtido: 9 
-		
-		\item Valor em binário das chaves: 1000001
-		\par Valor hexadecimal no display esperado: A
-		\par Valor hexadecimal no display obtido: A 
-		
-		\item Valor em binário das chaves: 1000010
-		\par Valor hexadecimal no display esperado: B
-		\par Valor hexadecimal no display obtido: B 
-		
-		\item Valor em binário das chaves: 1011010
-		\par Valor hexadecimal no display esperado: Z
-		\par Valor hexadecimal no display obtido: Z 
-	\end{itemize}
-	
+
+	\begin{center}
+		\begin{tabular}{ |c|c|c| }
+			\hline
+			Valor dos Switchs(Binário) & Valor esperado(Hexa) & Valor obtido(Hexa) \\
+			\hline
+			011 0000 & 0 & 0 \\
+			\hline
+			011 0001 & 1 & 1 \\
+			\hline
+			011 1001 & 9 & 9 \\
+			\hline
+			100 0001 & A & A \\
+			\hline
+			100 0010 & B & B \\
+			\hline
+			101 1010 & Z & Z \\
+			\hline
+		\end{tabular}
+	\end{center}
+
 	\subsection*{Observações}
 	
 	O grupo descobriu durante o experimento que os leds do display de 7 segmentos estavam ligados com a polaridade contraria da qual o grupo esperava. Assim, houve a necessidade de negar(truncar os bits) dos sinais de saída que vão para o display de 7 segmentos. 
