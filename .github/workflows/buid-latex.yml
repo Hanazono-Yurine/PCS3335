@@ -28,7 +28,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: ./
+        uses: tj-actions/changed-files@v45
         with:
           matrix: true
           dir_names: true
