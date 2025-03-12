@@ -1,50 +1,89 @@
 \documentclass[12pt, a4paper]{article}
 \usepackage{graphicx} % Required for inserting images
-\graphicspath{{images/}{images-desafios/}}
 \usepackage[a4paper, total={7.5in, 10in}]{geometry}
 \usepackage{float} % pra conseguir usar o \begin{figure}[H]
-% package pra tabela
-\usepackage{multirow}
-\usepackage{array}
-
-\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
-
-\def\tamanhoGrafico{0.8}
-
-\newcommand{\ohm}{\unit{\Omega} }
-\newcommand{\kohm}{\unit{k\Omega}}
-
-\title{
-	Relatório de Laboratório Digital A - PCS3335
-	\\ Experiência 1
-}
-
-\author{
-	Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
-	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
-	\\ Turma 3 - Bancada A6
-	\\ Professor: Bruno de Carvalho Albertini
-}
-
-\date{12/03/2025}
+	% package pra tabela
+	\usepackage{multirow}
+	\usepackage{array}
 	
-\begin{document}
+	\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
 	
-	\maketitle
+	\def\tamanhoGrafico{0.8}
 	
-	\section*{Execução}
+	\newcommand{\ohm}{\unit{\Omega} }
+	\newcommand{\kohm}{\unit{k\Omega}}
 	
-	balalaafalkfjl
-
-	\subsection*{Diagrama RTL}
+	\title{Relatório de Laboratório Digital A - PCS3335
+		\\ Experiência 1}
+	\author{Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
+		\\ Joao... - N.USP: ...
+		\\ Turma 3 - Bancada A6
+		\\ Professor: Bruno de Carvalho Albertini}
+	\date{12/03/2025}
 	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.7\linewidth]{bolsonaroPresidente2028_vulgo_exp1}
-		\label{fig:circuitos}
-	\end{figure}
-	
-	\section*{Desafio}
-	
-	
-\end{document}
+	\begin{document}
+		
+		\maketitle
+		
+		\section*{Execução}
+		
+		Elaboração da entidade que recebe um número binário de 10 bits das chaves e exibe o número em hexadecimal nos 6 displasys de 7 segmentos de forma palíndroma. 
+		
+		\subsection*{Diagrama RTL}
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.7\linewidth]{images/bolsonaroPresidente2028_vulgo_exp1}
+			\caption{Diagrama RTL da entidade bolsonaroPresidente2028}
+			\label{fig:bolsonaroPresidente2028_vulgo_exp1}
+		\end{figure}
+		
+		\subsection*{Testes}
+		
+		\begin{itemize}
+			\item Valor em binário das chaves: 00 0000 0000
+			\par Valor hexadecimal nos displays esperado: 000000
+			\par Valor hexadecimal nos displays obtido: 000000 
+			
+			\item Valor em binário das chaves: 00 0000 0001
+			\par Valor hexadecimal nos displays esperado: 100001
+			\par Valor hexadecimal nos displays obtido: 100001 
+			
+			\item Valor em binário das chaves: 00 0000 0010
+			\par Valor hexadecimal nos displays esperado: 200002
+			\par Valor hexadecimal nos displays obtido: 200002 
+			
+			\item Valor em binário das chaves: 00 0000 1111
+			\par Valor hexadecimal nos displays esperado: F0000F
+			\par Valor hexadecimal nos displays obtido: F0000F
+			
+			\item Valor em binário das chaves: 00 0001 0000
+			\par Valor hexadecimal nos displays esperado: F1001F
+			\par Valor hexadecimal nos displays obtido: F1001F
+			
+			\item Valor em binário das chaves: 00 1111 1111
+			\par Valor hexadecimal nos displays esperado: FF00FF
+			\par Valor hexadecimal nos displays obtido: FF00FF
+			
+			\item Valor em binário das chaves: 01 0000 0000
+			\par Valor hexadecimal nos displays esperado: FF11FF
+			\par Valor hexadecimal nos displays obtido: FF11FF
+			
+			\item Valor em binário das chaves: 11 1111 1111
+			\par Valor hexadecimal nos displays esperado: FF33FF
+			\par Valor hexadecimal nos displays obtido: FF33FF
+			
+		\end{itemize}
+		
+		\section*{Desafio}
+		
+		Elaboração de uma entidade que recebe um número binário de 7 bits das chaves e exibe o correspondente ASCII em um display de 7 segmentos.
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.7\linewidth]{images/bolsonaroPresidente2028_vulgo_exp1}
+			\caption{Diagrama RTL da entidade bolsonaroPresidente2028}
+			\label{fig:bolsonaroPresidente2028_vulgo_exp1}
+		\end{figure}
+		
+	\end{document}
