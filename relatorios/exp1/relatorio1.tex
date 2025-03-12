@@ -1,43 +1,44 @@
 \documentclass[12pt, a4paper]{article}
 \usepackage{graphicx} % Required for inserting images
+\graphicspath{{images/}{images-desafios/}}
 \usepackage[a4paper, total={7.5in, 10in}]{geometry}
 \usepackage{float} % pra conseguir usar o \begin{figure}[H]
-	% package pra tabela
-	\usepackage{multirow}
-	\usepackage{array}
+% package pra tabela
+\usepackage{multirow}
+\usepackage{array}
+
+\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+
+\def\tamanhoGrafico{0.8}
+
+\newcommand{\ohm}{\unit{\Omega} }
+\newcommand{\kohm}{\unit{k\Omega}}
+
+\title{Relatório de Laboratório Digital A - PCS3335
+	\\ Experiência 1}
+\author{Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
+	\\ Joao... - N.USP: ...
+	\\ Turma 3 - Bancada A6
+	\\ Professor: Bruno de Carvalho Albertini}
+\date{12/03/2025}
 	
-	\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+\begin{document}
 	
-	\def\tamanhoGrafico{0.8}
+	\maketitle
 	
-	\newcommand{\ohm}{\unit{\Omega} }
-	\newcommand{\kohm}{\unit{k\Omega}}
+	\section*{Execução}
 	
-	\title{Relatório de Laboratório Digital A - PCS3335
-		\\ Experiência 1}
-	\author{Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
-		\\ Joao... - N.USP: ...
-		\\ Turma 3 - Bancada A6
-		\\ Professor: Bruno de Carvalho Albertini}
-	\date{12/03/2025}
+	balalaajfalkfjla
 	
-	\begin{document}
-		
-		\maketitle
-		
-		\section*{Execução}
-		
-		balalaajfalkfjla
-		
-		\subsection*{Diagrama RTL}
-		
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.7\linewidth]{bolsonaroPresidente2028_vulgo_exp1}
-			\label{fig:circuitos}
-		\end{figure}
-		
-		\section*{Desafio}
-		
-		
-	\end{document}
+	\subsection*{Diagrama RTL}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{bolsonaroPresidente2028_vulgo_exp1}
+		\label{fig:circuitos}
+	\end{figure}
+	
+	\section*{Desafio}
+	
+	
+\end{document}
