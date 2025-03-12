@@ -1,136 +1,143 @@
 \documentclass[12pt, a4paper]{article}
 \usepackage{graphicx} % Required for inserting images
+\graphicspath{{images/}{images-desafios/}}
 \usepackage[a4paper, total={7.5in, 10in}]{geometry}
 \usepackage{float} % pra conseguir usar o \begin{figure}[H]
-	% package pra tabela
-	\usepackage{multirow}
-	\usepackage{array}
-	
-	\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
-	
-	\def\tamanhoGrafico{0.8}
-	
-	\newcommand{\ohm}{\unit{\Omega} }
-	\newcommand{\kohm}{\unit{k\Omega}}
-	
-	\title{Relatório de Laboratório Digital A - PCS3335
-		\\ Experiência 1}
-	\author{Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
-		\\ Pessoa deconhecida que nao quer suas informacoes pessoasi vazadas - N.USP: XXXX XXXX
-		\\ Turma 3 - Bancada A6
-		\\ Professor: Bruno de Carvalho Albertini}
-	\date{12/03/2025}
-	
-	\begin{document}
-		
-		\maketitle
-		
-		\section*{Execução}
-		
-		Elaboração da entidade que recebe um número binário de 10 bits das chaves e exibe o número em hexadecimal nos 6 displasys de 7 segmentos de forma palíndroma. 
-		
-		\subsection*{Diagrama RTL}
-		
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.7\linewidth]{images/bolsonaroPresidente2028_vulgo_exp1}
-			\label{fig:bolsonaroPresidente2028_vulgo_exp1}
-		\end{figure}
-		
-		\subsection*{Testes}
-		
-		\begin{itemize}
-			\item Valor em binário das chaves: 00 0000 0000
-			\par Valor hexadecimal nos displays esperado: 000000
-			\par Valor hexadecimal nos displays obtido: 000000 
-			
-			\item Valor em binário das chaves: 00 0000 0001
-			\par Valor hexadecimal nos displays esperado: 100001
-			\par Valor hexadecimal nos displays obtido: 100001 
-			
-			\item Valor em binário das chaves: 00 0000 0010
-			\par Valor hexadecimal nos displays esperado: 200002
-			\par Valor hexadecimal nos displays obtido: 200002 
-			
-			\item Valor em binário das chaves: 00 0000 1111
-			\par Valor hexadecimal nos displays esperado: F0000F
-			\par Valor hexadecimal nos displays obtido: F0000F
-			
-			\item Valor em binário das chaves: 00 0001 0000
-			\par Valor hexadecimal nos displays esperado: F1001F
-			\par Valor hexadecimal nos displays obtido: F1001F
-			
-			\item Valor em binário das chaves: 00 1111 1111
-			\par Valor hexadecimal nos displays esperado: FF00FF
-			\par Valor hexadecimal nos displays obtido: FF00FF
-			
-			\item Valor em binário das chaves: 01 0000 0000
-			\par Valor hexadecimal nos displays esperado: FF11FF
-			\par Valor hexadecimal nos displays obtido: FF11FF
-			
-			\item Valor em binário das chaves: 11 1111 1111
-			\par Valor hexadecimal nos displays esperado: FF33FF
-			\par Valor hexadecimal nos displays obtido: FF33FF
-			
-		\end{itemize}
+% package pra tabela
+\usepackage{multirow}
+\usepackage{array}
 
-		\section*{Desafio}
+\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+
+\def\tamanhoGrafico{0.8}
+
+\newcommand{\ohm}{\unit{\Omega} }
+\newcommand{\kohm}{\unit{k\Omega}}
+
+\title{
+	Relatório de Laboratório Digital A - PCS3335
+	\\ Experiência 1
+}
+
+\author{
+	Alunos: Rafael Hipólito Rodrigues - N.USP: 14604308
+	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
+	\\ Turma 3 - Bancada A6
+	\\ Professor: Bruno de Carvalho Albertini
+}
+
+\date{12/03/2025}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section*{Execução}
+	
+	Elaboração da entidade que recebe um número binário de 10 bits das chaves e exibe o número em hexadecimal nos 6 displasys de 7 segmentos de forma palíndroma. 
+	
+	\subsection*{Diagrama RTL}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/bolsonaroPresidente2028_vulgo_exp1}
+		\label{fig:bolsonaroPresidente2028_vulgo_exp1}
+	\end{figure}
+	
+	\subsection*{Testes}
+	
+	\begin{itemize}
+		\item Valor em binário das chaves: 00 0000 0000
+		\par Valor hexadecimal nos displays esperado: 000000
+		\par Valor hexadecimal nos displays obtido: 000000 
 		
-		Elaboração de uma entidade ascii2seg que recebe um número binário de 7 bits das chaves e exibe o correspondente ASCII em um display de 7 segmentos.
+		\item Valor em binário das chaves: 00 0000 0001
+		\par Valor hexadecimal nos displays esperado: 100001
+		\par Valor hexadecimal nos displays obtido: 100001 
 		
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=1\linewidth]{images-desafios/screenshot1.jpg}
-			\caption{Diagrama RTL da entidade ascii2seg completo.}
-			\label{fig:screenshot1}
-		\end{figure}
+		\item Valor em binário das chaves: 00 0000 0010
+		\par Valor hexadecimal nos displays esperado: 200002
+		\par Valor hexadecimal nos displays obtido: 200002 
 		
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.8\linewidth]{images-desafios/screenshot2.jpg}
-			\caption{Inicio do Diagrama RTL da entidade ascii2seg .}
-			\label{fig:screenshot2}
-		\end{figure}
+		\item Valor em binário das chaves: 00 0000 1111
+		\par Valor hexadecimal nos displays esperado: F0000F
+		\par Valor hexadecimal nos displays obtido: F0000F
 		
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.8\linewidth]{images-desafios/screenshot3.jpg}
-			\caption{Final do diagrama RTL da entidade ascii2seg.}
-			\label{fig:screenshot3}
-		\end{figure}
+		\item Valor em binário das chaves: 00 0001 0000
+		\par Valor hexadecimal nos displays esperado: F1001F
+		\par Valor hexadecimal nos displays obtido: F1001F
 		
-		Devido a necessidade de atribuir 96 valores(quantidade de caracteres ASCII utilizados) diferentes a o sinal de saída, o circuito precisou ficou muito longo.
+		\item Valor em binário das chaves: 00 1111 1111
+		\par Valor hexadecimal nos displays esperado: FF00FF
+		\par Valor hexadecimal nos displays obtido: FF00FF
 		
-		\subsection*{Testes}
+		\item Valor em binário das chaves: 01 0000 0000
+		\par Valor hexadecimal nos displays esperado: FF11FF
+		\par Valor hexadecimal nos displays obtido: FF11FF
 		
-		\begin{itemize}
-			\item Valor em binário das chaves: 011 0000
-			\par Valor hexadecimal no display esperado: 0
-			\par Valor hexadecimal no display obtido: 0 
-			
-			\item Valor em binário das chaves: 011 0001
-			\par Valor hexadecimal no display esperado: 1
-			\par Valor hexadecimal no display obtido: 1 
-			
-			\item Valor em binário das chaves: 0111001
-			\par Valor hexadecimal no display esperado: 9
-			\par Valor hexadecimal no display obtido: 9 
-			
-			\item Valor em binário das chaves: 1000001
-			\par Valor hexadecimal no display esperado: A
-			\par Valor hexadecimal no display obtido: A 
-			
-			\item Valor em binário das chaves: 1000010
-			\par Valor hexadecimal no display esperado: B
-			\par Valor hexadecimal no display obtido: B 
-			
-			\item Valor em binário das chaves: 1011010
-			\par Valor hexadecimal no display esperado: Z
-			\par Valor hexadecimal no display obtido: Z 
-		\end{itemize}
+		\item Valor em binário das chaves: 11 1111 1111
+		\par Valor hexadecimal nos displays esperado: FF33FF
+		\par Valor hexadecimal nos displays obtido: FF33FF
 		
-		\subsection*{Observações}
+	\end{itemize}
+
+	\section*{Desafio}
+	
+	Elaboração de uma entidade ascii2seg que recebe um número binário de 7 bits das chaves e exibe o correspondente ASCII em um display de 7 segmentos.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images-desafios/screenshot1.jpg}
+		\caption{Diagrama RTL da entidade ascii2seg completo.}
+		\label{fig:screenshot1}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\linewidth]{images-desafios/screenshot2.jpg}
+		\caption{Inicio do Diagrama RTL da entidade ascii2seg .}
+		\label{fig:screenshot2}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\linewidth]{images-desafios/screenshot3.jpg}
+		\caption{Final do diagrama RTL da entidade ascii2seg.}
+		\label{fig:screenshot3}
+	\end{figure}
+	
+	Devido a necessidade de atribuir 96 valores(quantidade de caracteres ASCII utilizados) diferentes a o sinal de saída, o circuito precisou ficou muito longo.
+	
+	\subsection*{Testes}
+	
+	\begin{itemize}
+		\item Valor em binário das chaves: 011 0000
+		\par Valor hexadecimal no display esperado: 0
+		\par Valor hexadecimal no display obtido: 0 
 		
-		O grupo descobriu durante o experimento que os leds do display de 7 segmentos estavam ligados com a polaridade contraria da qual o grupo esperava. Assim, houve a necessidade de negar(truncar os bits) dos sinais de saída que vão para o display de 7 segmentos. 
+		\item Valor em binário das chaves: 011 0001
+		\par Valor hexadecimal no display esperado: 1
+		\par Valor hexadecimal no display obtido: 1 
 		
-	\end{document}
+		\item Valor em binário das chaves: 0111001
+		\par Valor hexadecimal no display esperado: 9
+		\par Valor hexadecimal no display obtido: 9 
+		
+		\item Valor em binário das chaves: 1000001
+		\par Valor hexadecimal no display esperado: A
+		\par Valor hexadecimal no display obtido: A 
+		
+		\item Valor em binário das chaves: 1000010
+		\par Valor hexadecimal no display esperado: B
+		\par Valor hexadecimal no display obtido: B 
+		
+		\item Valor em binário das chaves: 1011010
+		\par Valor hexadecimal no display esperado: Z
+		\par Valor hexadecimal no display obtido: Z 
+	\end{itemize}
+	
+	\subsection*{Observações}
+	
+	O grupo descobriu durante o experimento que os leds do display de 7 segmentos estavam ligados com a polaridade contraria da qual o grupo esperava. Assim, houve a necessidade de negar(truncar os bits) dos sinais de saída que vão para o display de 7 segmentos. 
+	
+\end{document}
