@@ -4,11 +4,11 @@ use ieee.numeric_std.all;
 use ieee.numeric_bit.rising_edge;
 use std.textio.all;
 
-entity lulaPresidente2028_tb is end;
+entity lulaPresidente2024_tb is end;
 
-architecture test of lulaPresidente2028_tb is
+architecture test of lulaPresidente2024_tb is
 
-	component lulaPresidente2028 is
+	component lulaPresidente2024 is
 		generic (
 				WIDTH : natural := 8 -- Size in bits
 		);
@@ -35,7 +35,7 @@ begin
 	clk <= not clk after period/2;
 	counter_clk <= not counter_clk after counter_period/2;
 
-	petismo : lulaPresidente2028 port map (
+	petismo : lulaPresidente2024 port map (
 							counter_clock => counter_clk,
 							clock => clk,
 							reset => tb_reset,
@@ -53,8 +53,8 @@ begin
 	tb : process is
 		variable basic_test : bit := '0';
 	begin
-		--! lulaPresidente2028 testbench start
-		assert false report "lulaPresidente2028" severity note;
+		--! lulaPresidente2024 testbench start
+		assert false report "lulaPresidente2024" severity note;
 
 		tb_counter_enable <= '1';
 		tb_counter_up <= '1';
