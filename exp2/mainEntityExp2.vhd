@@ -85,7 +85,7 @@ begin
         data_o => sig_counter_data_o
     );
 
-    sig_reg_data_i <= sig_counter_data_o when reg_source_data_i = 1 else
+    sig_reg_data_i <= sig_counter_data_o when reg_source_data_i = '1' else
                       keys_data_i;
 
     shiftregister_inst: shiftregister
