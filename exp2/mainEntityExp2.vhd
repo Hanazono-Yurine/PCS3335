@@ -58,10 +58,16 @@ architecture arch of mainEntityExp2 is
             );
     end component;
 
+    --signals
     signal sig_counter_data_o : std_logic_vector( 9 downto 0 );
     signal sig_reg_data_o : std_logic_vector( 9 downto 0 );
     signal sig_reg_data_i : std_logic_vector( 9 downto 0 );
     
+    --NAO ESQUECE: inputs da entidade podem ser ligados aos componentes sem sinal intemediario;
+    -- mas pra ligar output dos componetes ao output da entidade precisa de sinal intermediario
+    signal sig_reg_seg2, sig_reg_seg1, sig_reg_seg0, sig_counter_seg2, sig_counter_seg1, sig_counter_seg0: std_logic_vector(6 downto 0);
+    signal sig_reg_serial_o_r, sig_reg_serial_o_l : std_logic;
+
 
 begin
 
@@ -93,47 +99,58 @@ begin
       loadOrShift => reg_loadOrShift,
       data_i      => sig_reg_data_i,
       data_o      => sig_reg_data_o,
-      serial_o_r  => reg_serial_o_r,
-      serial_o_l  => reg_serial_o_l
+      serial_o_r  => sig_reg_serial_o_r,
+      serial_o_l  => sig_reg_serial_o_l
     );
+
+    reg_serial_o_l <= sig_reg_serial_o_l;
+    reg_serial_o_r <= sig_reg_serial_o_r;
 
     -- display-7-seg que mostra o valor do counter
     hex2seg_counter2: hex2seg
     port map (
       hex => "00" & sig_counter_data_o(9 downto 8),
-      seg => counter_seg2
+      seg => sig_counter_seg2
     );
 
     hex2seg_counter1: hex2seg
     port map (
       hex => sig_counter_data_o(7 downto 4),
-      seg => counter_seg1
+      seg => sig_counter_seg1
     );
 
     hex2seg_counter0: hex2seg
     port map (
       hex => sig_counter_data_o(3 downto 0),
-      seg => counter_seg0
+      seg => sig_counter_seg0
     );
     
     -- display-7-seg que mostra o valor do reg
     hex2seg_reg2: hex2seg
     port map (
       hex => "00" & sig_reg_data_o(9 downto 8),
-      seg => reg_seg2
+      seg => sig_reg_seg2
     );
 
     hex2seg_reg1: hex2seg
     port map (
       hex => sig_reg_data_o(7 downto 4),
-      seg => reg_seg1
+      seg => sig_reg_seg1
     );
 
     hex2seg_reg0: hex2seg
     port map (
       hex => sig_reg_data_o(3 downto 0),
-      seg => reg_seg0
+      seg => sig_reg_seg0
     );
+
+    counter_seg2 <= sig_counter_seg2;
+    counter_seg1 <= sig_counter_seg1;
+    counter_seg0 <= sig_counter_seg0;
+
+    reg_seg2 <= sig_reg_seg2;
+    reg_seg1 <= sig_reg_seg1;
+    reg_seg0 <= sig_reg_seg0;
 
 
 end architecture;
