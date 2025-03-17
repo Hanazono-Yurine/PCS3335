@@ -1,0 +1,152 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{graphicx} % Required for inserting images
+\graphicspath{{images/}{images-desafios/}}
+\usepackage[a4paper, total={7.5in, 10in}]{geometry}
+\usepackage{float} % pra conseguir usar o \begin{figure}[H]
+\usepackage{indentfirst} % pra fazer tab n 1 paragrafos dos capitulos
+% package pra tabela
+\usepackage{multirow}
+\usepackage{array}
+
+%pacote pra codigo
+\usepackage{listings} 
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{myCodeStyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{cyan},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	%numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=myCodeStyle}
+\renewcommand{\lstlistingname}{Código}%Muda o termo "Listing":  Listing -> Código
+\renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Códigos
+
+
+\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+
+\def\tamanhoGrafico{0.8}
+
+\newcommand{\ohm}{\unit{\Omega} }
+\newcommand{\kohm}{\unit{k\Omega}}
+
+\title{
+	Laboratório Digital A - PCS3335
+	\\ Planejamento da Experiência 2
+}
+
+\author{
+	Alunos:
+	\\ Rafael Hipólito Rodrigues - N.USP: 14604308
+	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
+	\\ \\
+	Turma 3 - Bancada A6
+	\\ Professor: Bruno de Carvalho Albertini
+}
+
+%\date{}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section*{Execução}
+	
+	\begin{lstlisting}[language=vhdl, caption={VHDL do entity mainEntityExp2}, label={codigo}]
+entity mainEntityExp2 is
+	port (
+	--input counter
+	counter_clock, counter_reset, counter_enable, counter_load, counter_up : in std_logic;
+	
+	--input/output shiftregister
+	reg_clock, reg_reset, reg_serial_i : in std_logic;
+	reg_loadOrShift : in std_logic_vector( 1 downto 0 );
+	reg_serial_o_r, reg_serial_o_l : out std_logic;
+	
+	--entrada em paralelo das chaves
+	keys_data_i : in std_logic_vector( 9 downto 0 );
+	
+	--origem do reg_data_i
+	reg_source_data_i: in std_logic; -- 0 -> reg_data_i <= chaves; 1 -> reg_data_i <= contador
+	
+	--output display-7-seg counter
+	counter_seg2, counter_seg1, counter_seg0: out std_logic_vector(6 downto 0);
+	
+	--output display-7-seg shiftregister
+	reg_seg2, reg_seg1, reg_seg0: out std_logic_vector(6 downto 0)
+	);
+end entity;
+	\end{lstlisting}
+	
+	\subsection*{Diagramas RTL}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/mainEntityExp2RTL.png}
+		\caption{Diagrama RTL do mainEntityExp2.}
+		\label{fig:mainEntityExp2}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/counterRTL.png}
+		\caption{Diagrama RTL do counter.}
+		\label{fig:counterRTL}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/regRTL.png}
+		\caption{Diagrama RTL do shiftregister.}
+		\label{fig:regRTL}
+	\end{figure}
+	
+	\subsection*{Pinagem}
+	
+	\subsection*{Testes}
+
+	\begin{center}
+		\begin{tabular}{ |c|c|c| }
+			\hline
+			Valor dos Switchs(Binário) & Valor esperado(Hexa) & Valor obtido(Hexa) \\
+			\hline
+			00 0000 0000 & 000000 & 000000 \\
+			\hline
+			00 0000 0001 & 100001 & 100001 \\
+			\hline
+			00 0000 0010 & 200002 & 200002 \\
+			\hline
+			00 0000 1111 & F0000F & F0000F \\
+			\hline
+			00 0001 0000 & F1001F & F1001F \\
+			\hline
+			00 1111 1111 & FF00FF & FF00FF \\
+			\hline
+			01 0000 0000 & FF11FF & FF11FF \\
+			\hline
+			11 1111 1111 & FF33FF & FF33FF \\
+			\hline
+		\end{tabular}
+	\end{center}
+	
+	Todos os resultados obtidos foram conforme o esperado.
+	
+	
+	
+\end{document}
