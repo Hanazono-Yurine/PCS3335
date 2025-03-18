@@ -19,31 +19,30 @@ end shiftregister;
 architecture arch_reg of shiftregister is
 	signal data_temp : std_logic_vector( WIDTH-1 downto 0 ) := (others => '0');
 	
-	signal data_temp_reg : std_logic_vector( WIDTH-1 downto 0 ) := (others => '0');
+	--signal data_temp_reg : std_logic_vector( WIDTH-1 downto 0 ) := (others => '0');
 begin
 
-	process(clock)
+	process(clock, reset)
 	begin
-		--if ( reset = '1' ) then
-		--	data_temp <= (others => '0');
-		--end if;
-
-		if ( rising_edge(clock) ) then
+		if ( reset = '1' ) then
+			data_temp <= (others => '0');
+		elsif ( rising_edge(clock) ) then
 
 			if ( loadOrShift = "11" ) then
-				data_temp_reg <= data_i;
+				data_temp <= data_i;
 			elsif ( loadOrShift = "01" ) then
-				data_temp_reg <= serial_i & data_temp_reg( WIDTH-1 downto 1 );
+				data_temp <= serial_i & data_temp( WIDTH-1 downto 1 );
 			elsif ( loadOrShift = "10" ) then
-				data_temp_reg <= data_temp_reg( WIDTH-2 downto 0 ) & serial_i;
+				data_temp <= data_temp( WIDTH-2 downto 0 ) & serial_i;
 			end if;
 
 		end if;
 		
 	end process;
-	
-	data_temp <= (others => '0') when reset = '1' else
-					data_temp_reg;
+		
+	--data_temp <= (others => '0') when reset = '1' else
+	--			data_temp_reg;
+
 
 	data_o <= data_temp;
 	serial_o_l <= data_temp( WIDTH-1 );
