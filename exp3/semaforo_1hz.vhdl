@@ -45,7 +45,7 @@ begin
 		-- Desloca leds pra direita, uma vez só, se counter13_o = 5, 8, 13
 		if ( counter13_o = "0101" and leds(2) = '1' ) then
 			leds <= leds(0) & leds(2 downto 1);
-		elsif ( counter13_o = "1000" and leds(1) = '1' ) then
+		elsif ( counter13_o = "0111" and leds(1) = '1' ) then
 			leds <= leds(0) & leds(2 downto 1);
 		elsif ( counter13_o = "0000" and leds(0) = '1' ) then
 			leds <= leds(0) & leds(2 downto 1);
@@ -53,7 +53,7 @@ begin
 
 	end process;
 
-	clk13_reset <= '1' when counter13_o = "1100" or reset = '1' else '0';
+	clk13_reset <= '1' when counter13_o = "1011" or reset = '1' else '0';
 
 	vermelho <= leds(0);
 	amarelo <= leds(1);
