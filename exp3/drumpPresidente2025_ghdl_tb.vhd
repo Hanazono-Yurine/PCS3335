@@ -39,19 +39,19 @@ begin
 			variable vrm_lock : bit := '1';
 		begin
 
-			if ( vrd = '1' and vrd_lock = '1' ) then
+			if ( vrd = '0' and vrd_lock = '1' ) then
 				report "Verde";
 				vrd_lock := '0';
 				arm_lock := '1';
 			end if;
 
-			if ( arm = '1' and arm_lock = '1' ) then
+			if ( arm = '0' and arm_lock = '1' ) then
 				report "Amarelo";
 				arm_lock := '0';
 				vrm_lock := '1';
 			end if;
 
-			if ( vrm = '1' and vrm_lock = '1' ) then
+			if ( vrm = '0' and vrm_lock = '1' ) then
 				report "Vermelho";
 				vrd_lock := '1';
 				vrm_lock := '0';

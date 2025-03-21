@@ -23,13 +23,11 @@ architecture arch_semaforo of semaforo is
 
 	signal clk1024 : std_logic := '0';
 	signal clk1800 : std_logic := '0';
-	signal clk13_reset : std_logic := '0';
 	signal clk1800_reset : std_logic := '0';
 	signal clk1024_reset : std_logic := '0';
 	signal counter1024_o : std_logic_vector( 10 downto 0 ) := (others => '0');
 	signal counter1800_o : std_logic_vector( 10 downto 0 ) := (others => '0');
-	signal counter13_o : std_logic_vector( 3 downto 0 ) := (others => '0');
-	signal leds : std_logic_vector( 2 downto 0 ) := "100";
+	signal state : std_logic_vector( 11 downto 0 ) := "100000000000";
 begin
 	counter1024 : counter
 	generic map (
@@ -59,20 +57,6 @@ begin
 		data_o => counter1800_o
 	);
 
-	counter13 : counter
-	generic map (
-		WIDTH => 4
-	)
-	port map (
-		clock => clk1800,
-		reset => clk13_reset,
-		enable => '1',
-		load => '0',
-		up => '1',
-		data_i => ( others => '0' ),
-		data_o => counter13_o
-	);
-
 	process(clk)
 	begin
 
@@ -92,26 +76,22 @@ begin
 
 	end process;
 
-	process(clk1800)
+	process(clk1800, reset)
 	begin
 
-		-- Desloca leds pra direita, uma vez só, se counter13_o = 5, 8, 13
-		if ( counter13_o = "0101" and leds(2) = '1' ) then
-			leds <= leds(0) & leds(2 downto 1);
-		elsif ( counter13_o = "0111" and leds(1) = '1' ) then
-			leds <= leds(0) & leds(2 downto 1);
-		elsif ( counter13_o = "0000" and leds(0) = '1' ) then
-			leds <= leds(0) & leds(2 downto 1);
+		if ( reset = '1' ) then
+			state <= "100000000000";
+		elsif ( rising_edge(clk1800) ) then
+			state <= state(0) & state(11 downto 1);
 		end if;
 
 	end process;
 
-	clk13_reset <= '1' when counter13_o = "1011" or reset = '1' else '0';
 	clk1800_reset <= '1' when clk1800 = '1' or reset = '1' else '0';
 	clk1024_reset <= '1' when clk1024 = '1' or reset = '1' else '0';
 
-	vermelho <= leds(0);
-	amarelo <= leds(1);
-	verde <= leds(2);
+	vermelho <= not (state(11) or state(10) or state(9) or state(8) or state(7));
+	amarelo <= not (state(6) or state(5));
+	verde <= not (state(4) or state(3) or state(2) or state(1) or state(0));
 
 end architecture;
