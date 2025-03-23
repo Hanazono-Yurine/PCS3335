@@ -25,7 +25,7 @@ architecture arch_semaforoRaf of semaforoRaf is
     signal counterOut_verde, counterOut_amarelo, counterOut_vermelho : std_logic_vector(23 downto 0) := (others => '0');
     signal counterReset_verde, counterReset_amarelo, counterReset_vermelho: std_logic := '1';
     signal sig_verde, sig_amarelo, sig_vermelho, sig_reset: std_logic := '0';
-
+    signal out_verde, out_amarelo, out_vermelho: std_logic := '0';
 
     type state_type is (Sverde, Samarelo, Svermelho, Sreset);
     signal state, next_state: state_type := Sverde;
@@ -106,19 +106,19 @@ begin
 
     -- oq acontece quando to num estado especifico
     -- verde
-    verde <= '1' when state = Sverde else
+    out_verde <= '1' when state = Sverde else
         '0';
     counterReset_verde <= '0' when state = Sverde else
         '1';
 
     -- amarelo
-    amarelo <= '1' when state = Samarelo else
+    out_amarelo <= '1' when state = Samarelo else
         '0';
     counterReset_amarelo <= '0' when state = Samarelo else
         '1';
 
     -- vermelho
-    vermelho <= '1' when state = Svermelho or state = Sreset else -- colocar state = Sreset pra quando estiver apertando o reset ficar vermelho
+    out_vermelho <= '1' when state = Svermelho or state = Sreset else -- colocar state = Sreset pra quando estiver apertando o reset ficar vermelho
         '0';
     counterReset_vermelho <= '0' when state = Svermelho else
         '1';
@@ -126,6 +126,10 @@ begin
     -- reset
     sig_reset <= '1' when state = Sreset else
         '0';
+
+    verde <= out_verde;
+    amarelo <= out_amarelo;
+    vermelho <= out_vermelho;
      
 
 end architecture;
