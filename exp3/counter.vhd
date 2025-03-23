@@ -18,13 +18,13 @@ architecture arch_count of counter is
 	signal data_temp : unsigned( WIDTH-1 downto 0 ) := (others => '0');
 begin
 
-	process(clock)
+	process(clock, reset)
 	begin
 
-		if ( rising_edge(clock) ) then
-			if ( reset = '1' ) then
-				data_temp <= (others => '0');
-			elsif ( load = '1' ) then
+		if ( reset = '1' ) then
+			data_temp <= (others => '0');
+		elsif ( rising_edge(clock) ) then
+			if ( load = '1' ) then
 				data_temp <= unsigned( data_i );
 			elsif ( enable = '1' and up = '1' ) then
 				data_temp <= data_temp + 1;
