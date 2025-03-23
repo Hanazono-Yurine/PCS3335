@@ -66,9 +66,25 @@
 	
 	\maketitle
 	
-	\section*{Planejamento} 
+	\section*{Planejamento}
 	
+	Elaboração de uma entidade semaforo que alterar entre verde, amarelo e vermelho utilizando uma Maquina de Estados Finitos com clock de 1.8432MHz.
+	\par A figura \ref{fig:fsmExp3} mostra o Diagrama da Maquina de Estados Finitos da entidade semaforo.
 	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/fsmExp3.pdf}
+		\caption{Diagrama da Maquina de Estados Finitos do semaforo.}
+		\label{fig:fsmExp3}
+	\end{figure}
+	
+	\begin{itemize}
+		\item verde, amarelo e vermelho são as saídas da entidade.
+		\item reset é a entrada reset da entidade.
+		\item sig\_verde, sig\_amarelo e sig\_vermelho são os sinais que são ativados quando o contador de seu
+		respectivo estado atinge o valor desejado na contagem dos segundos.
+		\item sig\_reset é o sinal que é ativado quando o estado atual é \texttt{Sreset}.
+	\end{itemize}
 
 	
 	\section*{Diagramas RTL}
@@ -82,9 +98,25 @@
 	
 	\section*{Pinagem}
 	
-	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{|l|l|}
+				\hline
+				amarelo  & PIN\_AA22 \\ \hline
+				clk      & ip\_pll    \\ \hline
+				reset    & PIN\_U7   \\ \hline
+				verde    & PIN\_U21  \\ \hline
+				vermelho & PIN\_W21  \\ \hline
+			\end{tabular}
+		\end{center}
+		
+	\end{table}
 	
 	\section*{Testes}
+	
+	\begin{itemize}
+		\item começa sinal verde, apos 5s, começa sinal amarelo.
+	\end{itemize}
 
 	
 	
