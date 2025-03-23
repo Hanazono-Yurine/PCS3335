@@ -2,9 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_bit.all;
 
-library std;
-use std.textio.all;
-
 entity semaforoRaf_tb is
 end entity;
 
@@ -24,7 +21,7 @@ architecture tb of semaforoRaf_tb is
 
   -- Configurações do clock
   signal keep_simulating : std_logic := '0'; -- delimita o tempo de geração do clock
-  constant clockPeriod : time := 542.5347222222222 ns;
+  constant clockPeriod : time := 542.5347222222222 ns; -- clock 1843200 Hz
   
 begin
 
@@ -50,22 +47,22 @@ begin
     assert false report "simulation start" severity note;
     keep_simulating <= '1';
 
-    wait for 15 sec;
+    wait for 7.3 ms;
 
-    wait until falling_edge(clk_in);
+    
     dut_reset <= '1';
-    wait until falling_edge(clk_in);
+    wait for 100 ns;
     dut_reset <= '0';
 
-    wait for 10 sec;
+    wait for 7 ms;
 
-    wait until falling_edge(clk_in);
+    
     dut_reset <= '1';
-    wait until falling_edge(clk_in);
+    wait for 100 ns;
     dut_reset <= '0';
           
     
-    wait for 6 sec;
+    wait for 6 ms;
     
     -- final do testbench
     assert false report "simulation end" severity note;

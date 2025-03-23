@@ -3,9 +3,6 @@ use ieee.std_logic_1164.all;
 --use ieee.numeric_bit.all;
 use ieee.numeric_std.all;
 
-library std;
-use std.textio.all;
-
 entity semaforoRaf is
 	port (
 				clk, reset : in std_logic;
@@ -32,8 +29,6 @@ architecture arch_semaforoRaf of semaforoRaf is
 
     type state_type is (Sverde, Samarelo, Svermelho, Sreset);
     signal state, next_state: state_type := Sverde;
-
-    signal temp: std_logic_vector(1 downto 0) := (others => '0');
 	
 begin
 	counterVerde : counter
@@ -50,7 +45,7 @@ begin
 		data_o => counterOut_verde
 	);
 
-    sig_verde <= '1' when counterOut_verde = "100011001010000000000000" else
+    sig_verde <= '1' when counterOut_verde = "000000000000111001100011" else -- contar ate 000000000000111001100011 num clock de 1843200 Hz significa passar 2ms
                 '0';
     
 
@@ -69,7 +64,7 @@ begin
 		data_o => counterOut_amarelo
 	);
 
-    sig_amarelo <= '1' when counterOut_amarelo = "001110000100000000000000" else
+    sig_amarelo <= '1' when counterOut_amarelo = "000000000000111001100011" else
                 '0';
 
 
@@ -88,7 +83,7 @@ begin
 		data_o => counterOut_vermelho
 	);
 
-    sig_vermelho <= '1' when counterOut_Vermelho = "100011001010000000000000" else
+    sig_vermelho <= '1' when counterOut_Vermelho = "000000000000111001100011" else
                     '0';    
 
     -- process
@@ -96,14 +91,7 @@ begin
     begin
       if reset = '1' then
         state <= Sreset;
-      elsif sig_vermelho = '1' or sig_amarelo = '1' or sig_verde = '1' or sig_reset = '1' then
-        --report "deu sinal" ;
-        --temp(0) <= sig_amarelo;
-        --report "amarelo = " & integer'image(to_integer(unsigned(temp))) ;
-        --temp(0) <= sig_verde;
-        --report "verde = " & integer'image(to_integer(unsigned(temp)));
-        --temp(0) <= sig_vermelho;
-        --report "vermelho = " & integer'image(to_integer(unsigned(temp)));
+      elsif sig_vermelho = '1' or sig_amarelo = '1' or sig_verde = '1' or sig_reset = '1' then -- so quero ir pro proximo estado quando os sig_ mudar pra 1, e nao pra 0
           state <= next_state;
       end if;
     end process;
@@ -130,7 +118,7 @@ begin
         '1';
 
     -- vermelho
-    vermelho <= '1' when state = Svermelho else
+    vermelho <= '1' when state = Svermelho or state = Sreset else -- colocar state = Sreset pra quando estiver apertando o reset ficar vermelho
         '0';
     counterReset_vermelho <= '0' when state = Svermelho else
         '1';
