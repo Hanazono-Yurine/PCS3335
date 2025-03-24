@@ -1,0 +1,54 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_bit.all;
+
+entity clock1Hz is
+	port (
+				clk, reset : in std_logic;
+				--vermelho, amarelo, verde : out std_logic
+                newClockOut : out std_logic
+		 );
+end entity;
+
+architecture arch_clock1Hz of clock1Hz is
+	component counter is
+		generic (
+			WIDTH : natural := 8 -- Size in bits
+		);
+		port (
+			clock, reset, enable, load, up : in std_logic;
+			data_i : in std_logic_vector( WIDTH-1 downto 0 );
+			data_o : out std_logic_vector( WIDTH-1 downto 0 )
+		);
+	end component;
+
+    signal counterOut: std_logic := '0';
+    signal counterReset: std_logic := '0';
+    signal newClock: std_logic := 0;
+	
+begin
+	counter1 : counter
+	generic map (
+		WIDTH => 3
+	)
+	port map (
+		clock => clk,
+		reset => counterReset,
+		enable => '1',
+		load => '0',
+		up => '1',
+		data_i => ( others => '0' ),
+		data_o => counterOut
+	);
+
+    counterReset <= '1' when counterOut = "101" else
+                    '0';
+
+    FFnewClock : process(counterOut)
+    begin
+        if counterOut = "000" then
+            newClock <= not newClock;
+        end if;
+    end process;
+
+end architecture;
