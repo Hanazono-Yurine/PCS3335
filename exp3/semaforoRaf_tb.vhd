@@ -8,7 +8,7 @@ end entity;
 architecture tb of semaforoRaf_tb is
   
   -- Componente a ser testado (Device Under Test -- DUT)
-    component semaforoRaf is
+    component semaforoRaf_1counter is
         port (
                     clk, reset : in std_logic;
                     vermelho, amarelo, verde : out std_logic
@@ -28,7 +28,7 @@ begin
   clk_in <= (not clk_in) and keep_simulating after clockPeriod/2;
   
 
-  dut: semaforoRaf port map(
+  dut: semaforoRaf_1counter port map(
     clk => clk_in,
     reset => dut_reset,
     verde => dut_verde,
@@ -62,7 +62,7 @@ begin
     dut_reset <= '0';
           
     
-    wait for 6 ms;
+    wait for 20 ms;
     
     -- final do testbench
     assert false report "simulation end" severity note;
