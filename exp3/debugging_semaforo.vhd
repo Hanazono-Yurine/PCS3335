@@ -14,6 +14,8 @@ entity debugging_semaforo is
 		);
 end entity;
 
+
+
 architecture arch_semaforo of debugging_semaforo is
 
 	component counter is
@@ -32,6 +34,15 @@ architecture arch_semaforo of debugging_semaforo is
 			 seg : out std_logic_vector(6 downto 0)  -- Saída hexadecimal
 		);
 	end component;
+		
+    component ip_pll_50MHz is
+        port (
+            refclk   : in  std_logic := '0'; --  refclk.clk
+            rst      : in  std_logic := '0'; --   reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
+            locked   : out std_logic         --  locked.export
+        );
+    end component;
 
     --debugging signals
     signal sig_leds : std_logic_vector(9 downto 0) := (others => '0');
@@ -52,6 +63,16 @@ architecture arch_semaforo of debugging_semaforo is
     signal state, next_state: state_type := Sverde;
 	
 begin
+
+    --ip_pll
+    baka: ip_pll_50MHz
+    port map (
+        refclk   => clk50MHz,
+        rst      => '0',
+        outclk_0 => clk
+    );
+
+
 	counterVerde : counter
 	generic map (
 		WIDTH => 24
