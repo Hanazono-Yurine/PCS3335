@@ -87,14 +87,27 @@
 	\end{itemize}
 
 	
-	\section*{Diagramas RTL}
+	\section*{Diagramas}
+	
+	Diagrama RTL gerado no Quartus:
 	
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width=1\linewidth]{images/semaforoRafRTL.pdf}
+		\includegraphics[width=1\linewidth]{images/RLTrelatorio.png}
 		\caption{Diagrama RTL do semaforo.}
-		\label{fig:semaforoRafRTL}
+		\label{fig:RLTrelatorio}
 	\end{figure}
+	
+	Diagrama da Maquina de Estados Finitos gerado no Quartus:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/FSMrelatorio.png}
+		\caption{Diagrama RTL do semaforo.}
+		\label{fig:FSMrelatorio}
+	\end{figure}
+	
+	
 	
 	\section*{Simulação}
 	
@@ -115,7 +128,7 @@
 				\hline
 				amarelo  & PIN\_AA22 \\ \hline
 				clk      & ip\_pll    \\ \hline
-				reset    & PIN\_U7   \\ \hline
+				reset    & PIN\_U13   \\ \hline
 				verde    & PIN\_U21  \\ \hline
 				vermelho & PIN\_W21  \\ \hline
 			\end{tabular}
@@ -127,13 +140,29 @@
 	
 	\begin{itemize}
 		\item Começa a exibir sinal verde por 5s \( \rightarrow \) começa a exibir sinal amarelo.
+		\par Resultado: Funcionou parcialmente.
 		\item Começa a exibir sinal amarelo por 2s \( \rightarrow \) começa a exibir sinal vermelho.
+		\par Resultado: Funcionou parcialmente.
 		\item Começa a exibir sinal vermelho por 5s \( \rightarrow \) começa a exibir sinal verde.
+		\par Resultado: Funcionou parcialmente.
 		\item Começa a exibir sinal verde por 2s \( \rightarrow \) aperta reset \( \rightarrow \) começa a exibir sinal vermelho por 5s.
+		\par Resultado: Funcionou parcialmente.
 		\item Começa a exibir sinal amarelo por 1s \( \rightarrow \) aperta reset \( \rightarrow \) começa a exibir sinal vermelho por 5s.
+		\par Resultado: Funcionou parcialmente.
 		\item Começa a exibir sinal vermelho por 2s \( \rightarrow \) aperta reset \( \rightarrow \) continua exibindo sinal vermelho por mais 5s.
+		\par Resultado: Funcionou parcialmente.
 		
 	\end{itemize}
+	
+	\subsection*{Comentários}
+	
+	A logica de próximo estado da Maquina de Estados Finitos funcionou corretamente. 
+	Após o verde era mostrado o amarelo. Após o amarelo, o vermelho. Após o vermelho, o verde. 
+	Ao apertar o reset, seguia para o estado vermelho.
+	\par
+	Contudo, a logica de contagem para passar o tempo de cada estado não apresentou funcionamento totalmente adequado.
+	Os estados as vezes ficavam mais tempo do que deviam, e outras vezes ficavam menos tempo do que deviam.
+	O grupo pensa que esse comportamento se deu por causa de uma falha na implementação do gerador de clock de 1Hz.
 
 	
 	
