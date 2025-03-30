@@ -5,5 +5,5 @@
 **/*.log
 **/*.pdf
 **/*.synctex.gz
-**/*.vcf
+**/*.vcd
 **/*.cf
