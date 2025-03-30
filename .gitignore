@@ -4,19 +4,6 @@
 **/*.fls
 **/*.log
 **/*.synctex.gz
-<<<<<<< Updated upstream
-exp3/work-obj93.cf
-exp3/tb.vcd
-exp3/tb1Hz.vcd
-relatorios/exp1/relatorio.pdf
-relatorios/exp2/relatorio.pdf
-relatorios/exp3/relatorio.pdf
-=======
-<<<<<<< Updated upstream
-=======
 **/*.cf
 **/**.vcd
 **/**.vcd
-relatorios/exp*/*.pdf
->>>>>>> Stashed changes
->>>>>>> Stashed changes
