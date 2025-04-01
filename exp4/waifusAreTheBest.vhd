@@ -54,7 +54,7 @@ begin
 	port map (
 		clock  		=> clock_pll,
 		reset 		=> reset,
-		divisor 	=> std_logic_vector(to_unsigned(16,16)),
+		divisor 	=> std_logic_vector(to_unsigned(12,16)),
 		baudOut_n => clock_brg
 	);
 

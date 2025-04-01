@@ -22,7 +22,7 @@ begin
 			counter <= (others => '0');
 			clk_out <= '1';
 		elsif rising_edge(clock) then
-			if counter = shift_left(unsigned(divisor), 2) - 1 then
+			if counter = shift_right(unsigned(divisor), 1) - 1 then
 				counter <= (others => '0');
 				clk_out <= not clk_out;
 			else
