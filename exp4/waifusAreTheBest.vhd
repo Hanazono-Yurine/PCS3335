@@ -1,13 +1,16 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_bit.all;
+use ieee.numeric_std.all;
 
 entity waifusAreTheBest is
 	port (
 		clock 			: in std_logic;
 		reset 			: in std_logic;
-		serial_out 	: out std_logic
+		serial_out 	: out std_logic;
+		--desafio
+		go : in std_logic := '0';
+		readyLed : out std_logic
 	);
 end entity;
 
@@ -15,8 +18,10 @@ architecture insides of waifusAreTheBest is
 
 	component transmitter is
 		port (
-			clock, reset: in std_logic;
-			serialOut: out std_logic
+			clock153600, reset: in std_logic;
+			serialOut: out std_logic;
+			go : in std_logic;
+		    readyLed : out std_logic
 		);
 	end component;
 
@@ -40,6 +45,7 @@ architecture insides of waifusAreTheBest is
 
 	signal clock_pll : std_logic := '0';
 	signal clock_brg : std_logic := '0';
+	signal sig_readyLed : std_logic := '0';
 
 begin
 
@@ -60,9 +66,13 @@ begin
 
 	shokoNishimiya: transmitter
 	port map (
-		clock     => clock_brg,
-		reset     => reset,
-		serialOut	=> serial_out
+	  clock153600     => clock_brg,
+	  reset     => reset,
+	  serialOut => serial_out,
+	  go        => go,
+	  readyLed  => sig_readyLed
 	);
+
+	readyLed <= sig_readyLed;
 
 end architecture;
