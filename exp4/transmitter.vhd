@@ -5,7 +5,10 @@ use ieee.numeric_std.all;
 entity transmitter is
 	port (
 		clock153600, reset: in std_logic;
-		serialOut: out std_logic
+		serialOut: out std_logic;
+        --desafio
+		go : in std_logic := '0';
+		readyLed : out std_logic
 	);
 end entity;
 
@@ -13,8 +16,10 @@ architecture rtl of transmitter is
 
     component transmitterTimingControl is
         port (
-            clock9600, reset: in std_logic;
-            reg_loadOrShift: out std_logic
+            clock153600, reset: in std_logic;
+            reg_loadOrShift: out std_logic_vector( 1 downto 0 );
+            go : in std_logic := '0';
+		    readyLed : out std_logic
         );
     end component;
 
@@ -31,33 +36,18 @@ architecture rtl of transmitter is
         );
     end component;
 
-    component baudRateGenerator is
-        port(
-            clock     : in  std_logic;
-            reset     : in  std_logic;
-            divisor		: in  std_logic_vector(15 downto 0);
-            baudOut_n : out std_logic
-        );
-    end component;
-
-    signal clock9600, serial: std_logic;
+    signal serial: std_logic;
     signal reg_control: std_logic_vector(1 downto 0);
 
 begin
 
-    divClock16: baudRateGenerator
-    port map (
-      clock     => clock153600,
-      reset     => reset,
-      divisor   => std_logic_vector(to_unsigned(16,16)),
-      baudOut_n => clock9600
-    );
-
     TTC: transmitterTimingControl
     port map (
-      clock9600       => clock9600,
+      clock153600       => clock153600,
       reset           => reset,
-      reg_loadOrShift => reg_control
+      reg_loadOrShift => reg_control,
+      go              => go,
+      readyLed        => readyLed
     );
 
     TSR: shiftregister
@@ -65,7 +55,7 @@ begin
       WIDTH => 11
     )
     port map (
-      clock       => clock9600,
+      clock       => clock153600,
       reset       => reset,
       serial_i    => '1',
       loadOrShift => reg_control,
