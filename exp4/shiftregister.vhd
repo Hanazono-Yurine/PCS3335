@@ -17,7 +17,7 @@ entity shiftregister is
 end shiftregister;
 
 architecture arch_reg of shiftregister is
-	signal data_temp : std_logic_vector( WIDTH-1 downto 0 ) := (others => '0');
+	signal data_temp : std_logic_vector( WIDTH-1 downto 0 ) := (others => '1');
 	
 	--signal data_temp_reg : std_logic_vector( WIDTH-1 downto 0 ) := (others => '0');
 begin
@@ -25,7 +25,7 @@ begin
 	process(clock, reset)
 	begin
 		if ( reset = '1' ) then
-			data_temp <= (others => '0');
+			data_temp <= (others => '1');
 		elsif ( rising_edge(clock) ) then
 
 			if ( loadOrShift = "11" ) then
