@@ -4,8 +4,11 @@ use ieee.numeric_std.all;
 
 entity transmitterTimingControl is
 	port (
-		clock9600, reset: in std_logic;
-		reg_loadOrShift: out std_logic
+		clock153600, reset: in std_logic;
+		reg_loadOrShift: out std_logic_vector(1 downto 0);
+		--desafio
+		go : in std_logic := '0';
+		readyLed : out std_logic
 	);
 end entity;
 
@@ -22,41 +25,69 @@ architecture rtl of transmitterTimingControl is
 		);
 	end component;
 
-    --fsm
-    type state_type is (Sload, Sdesloca, Sreset);
-    signal state, next_state: state_type := Sload;
+	signal sig_regControl: std_logic_vector(1 downto 0);
+	signal reset_desloca: std_logic := '0'; 
+	signal counterDeslocaOut: std_logic_vector(4 downto 0);
+	signal counter15_out: std_logic_vector(3 downto 0);
 
-    signal sig_desloca, en_desloca, reset_desloca: std_logic := '0';
-    signal counterDeslocaOut: std_logic_vector(4 downto 0);
-    signal sig_regControl: std_logic_vector(1 downto 0);
+
+	signal counted_bits, counted_bit, counted_bit_enable : std_logic := '0';
+
+	signal counter15_reset, counter15_en, contou15 : std_logic := '0';
+
+	--fsm
+    type state_type is (Sreset, Sload, S_idle, SnextBit, Sready);
+    signal state, next_state: state_type := Sload;
 
 begin
 
-    counterDesloca: counter
+    counterBits: counter
     generic map (
         WIDTH => 5
     )
     port map (
-        clock  => clock9600,
+        clock  => counted_bit,
         reset  => reset_desloca,
-        enable => en_desloca,
+        enable => counted_bit_enable,
         load   => '0',
         up     => '1',
         data_i => (others => '0'),
         data_o => counterDeslocaOut
     );
 
-	sig_desloca <= '1' when counterDeslocaOut = "11010" else -- 11010 = 11+15; 11 de enviar 11 bits; 15 de tempo de espera
+	counted_bit <= '1' when state = SnextBit else '0';
+	reset_desloca <= '1' when state = Sload else '0';
+
+	counted_bits <= '1' when counterDeslocaOut = STD_LOGIC_VECTOR(to_unsigned(11,5)) else 
 		'0'; 
-	en_desloca <= '0' when counterDeslocaOut = "11010" else
+	counted_bit_enable <= '0' when counterDeslocaOut = STD_LOGIC_VECTOR(to_unsigned(11,5)) else
+		'1';  
+
+	counter15: counter
+    generic map (
+        WIDTH => 4
+    )
+    port map (
+        clock  => clock153600,
+        reset  => counter15_reset,
+        enable => counter15_en,
+        load   => '0',
+        up     => '1',
+        data_i => (others => '0'),
+        data_o => counter15_out
+    );
+
+	contou15 <= '1' when counter15_out = STD_LOGIC_VECTOR(to_unsigned(14,4)) else
+		'0'; 
+	counter15_en <= '0' when counter15_out = STD_LOGIC_VECTOR(to_unsigned(14,4)) else
 		'1';  
 
 	-- process padrao de procimo estado da fsm
-	process(clock9600, reset)
+	process(clock153600, reset)
 	begin
 		if reset = '1' then
 			state <= Sreset;
-		elsif rising_edge(clock9600) then
+		elsif rising_edge(clock153600) then
 			state <= next_state;
 		end if;
 	end process;
@@ -64,18 +95,25 @@ begin
 	-- logica proximo estado
 	next_state <=
 		Sload when (state = Sreset) else
-		Sdesloca when (state = Sload) else
-		Sdesloca when (state = Sdesloca and sig_desloca = '0') else
-		Sload when (state = Sdesloca and sig_desloca = '1') else
+		S_idle when (state = Sload and go = '1') else
+		S_idle when (state = S_idle and contou15 = '0') else
+		SnextBit when (state = S_idle and contou15 = '1' and counted_bits = '0') else
+		Sready when (state = S_idle and contou15 = '1' and counted_bits = '1') else
+		Sready when (state = Sready and go = '1') else
+		Sload when (state = Sready and go = '0') else
+		S_idle when (state = SnextBit) else
 		state;
 
 	-- oq fazer em cada estado
-		sig_regControl <= "11" when state = Sload else 
-						"01" when state = Sdesloca else
-						"00" when state = Sreset;
+	sig_regControl <= "11" when state = Sload and go = '1' else 
+					  "00" when state = S_idle else
+					  "01" when state = SnextBit else
+					  "00";
 
-		reset_desloca <= '0' when state = Sdesloca else '1';
+	counter15_reset <= '0' when state = S_idle else '1';
 
-        reg_loadOrShift <= sig_regControl;
+	readyLed <= '1' when state = Sready else '0';
+	
+    reg_loadOrShift <= sig_regControl;
     
 end architecture;
