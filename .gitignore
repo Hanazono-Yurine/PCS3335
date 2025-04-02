@@ -3,7 +3,7 @@
 **/*.fdb_latexmk
 **/*.fls
 **/*.log
+**/*.pdf
 **/*.synctex.gz
+**/*.vcd
 **/*.cf
-**/**.vcd
-**/**.vcd
