@@ -4,10 +4,17 @@ use ieee.numeric_std.all;
 
 entity transmitterTimingControl is
 	port (
-		clock, reset	: in std_logic;
+		clock, reset        : in std_logic;
 		go                  : in std_logic := '0';
 		txConfig            : in std_logic_vector(6 downto 0);
-		reg_loadOrShift     : out std_logic_vector(1 downto 0);
+		-- 000 - TSR faz nada
+		-- 001 - TSR Envia o Start Bit
+		-- 010 - TSR Envia o proximo bit da Mensagem
+		-- 011 - TSR Envia o End Bit
+		-- 100 - TSR Envia o bit de paridade Par
+		-- 101 - TSR Envia o bit de paridade Impar
+		-- 111 - TSR Faz load do THR
+		tsrControl          : out std_logic_vector(2 downto 0);
 		readyLed            : out std_logic
 	);
 end entity;
@@ -37,8 +44,10 @@ architecture rtl of transmitterTimingControl is
 
 	signal totalBitsTX : std_logic_vector( 4 downto 0 ) := std_logic_vector(to_unsigned( 11, 5 )); -- In binary = 1011
 
+	signal sendParityBit : std_logic := '0';
+
 	--fsm
-	type state_type is (Sreset, Sload, S_idle, SnextBit, Sready);
+	type state_type is (Sreset, Sload, S_idle, SstartBit, SnextBit, SparityBit, SendBit, Sready);
 	signal state, next_state: state_type := Sload;
 
 begin
@@ -60,14 +69,10 @@ begin
 	-- Achei melhor usar um mux enorme mesmo
 	-- Senao teria fica mais complexo
 	-- Se vc tiver outra ideia, sintasse livre pra modificar
-	totalBitsTX <= std_logic_vector(to_unsigned(  7, 5 )) when txConfig(0) = '0' and txConfig(1) = '0' and txConfig(3) = '0' else
-								 std_logic_vector(to_unsigned(  8, 5 )) when txConfig(0) = '0' and txConfig(1) = '1' and txConfig(3) = '0' else
-								 std_logic_vector(to_unsigned(  9, 5 )) when txConfig(0) = '1' and txConfig(1) = '0' and txConfig(3) = '0' else
-								 std_logic_vector(to_unsigned( 10, 5 )) when txConfig(0) = '1' and txConfig(1) = '1' and txConfig(3) = '0' else
-								 std_logic_vector(to_unsigned(  8, 5 )) when txConfig(0) = '0' and txConfig(1) = '0' and txConfig(3) = '1' else
-								 std_logic_vector(to_unsigned(  9, 5 )) when txConfig(0) = '0' and txConfig(1) = '1' and txConfig(3) = '1' else
-								 std_logic_vector(to_unsigned( 10, 5 )) when txConfig(0) = '1' and txConfig(1) = '0' and txConfig(3) = '1' else
-								 std_logic_vector(to_unsigned( 11, 5 )) when txConfig(0) = '1' and txConfig(1) = '1' and txConfig(3) = '1';
+	totalBitsTX <= std_logic_vector(to_unsigned( 5, 5 )) when txConfig(0) = '0' and txConfig(1) = '0' else
+								 std_logic_vector(to_unsigned( 6, 5 )) when txConfig(0) = '0' and txConfig(1) = '1' else
+								 std_logic_vector(to_unsigned( 7, 5 )) when txConfig(0) = '1' and txConfig(1) = '0' else
+								 std_logic_vector(to_unsigned( 8, 5 )) when txConfig(0) = '1' and txConfig(1) = '1';
 
 	counted_bit <= '1' when state = SnextBit else '0';
 	reset_desloca <= '1' when state = Sload else '0';
@@ -91,6 +96,8 @@ begin
 		data_o => counter15_out
 	);
 
+	counter15_reset <= '0' when state = S_idle or state = Sload else '1';
+
 	contou15 <= '1' when counter15_out = STD_LOGIC_VECTOR(to_unsigned(14,4)) else
 		'0'; 
 	counter15_en <= '0' when counter15_out = STD_LOGIC_VECTOR(to_unsigned(14,4)) else
@@ -107,23 +114,27 @@ begin
 	end process;
 
 	-- logica proximo estado
-	next_state <= Sload when (state = Sreset) else
-								S_idle when (state = Sload and go = '1') else
+	next_state <= Sready when (state = Sreset) else
+								SstartBit when (state = Sready and go = '1') else
+								Sload when (state = SstartBit) else
+								S_idle when (state = Sload) else
 								S_idle when (state = S_idle and contou15 = '0') else
 								SnextBit when (state = S_idle and contou15 = '1' and counted_bits = '0') else
-								Sready when (state = S_idle and contou15 = '1' and counted_bits = '1') else
-								Sready when (state = Sready and go = '1') else
+								SparityBit when (state = S_idle and contou15 = '1' and counted_bits = '1' and txConfig(3) = '1') else
+								SendBit when (state = S_idle and contou15 = '1' and counted_bits = '1' and txConfig(3) = '0') else
+								SendBit when (state = SparityBit) else
+								SendBit when (state = SendBit and contou15 = '0') else
+								Sready when (state = SendBit and contou15 = '1') else
 								Sload when (state = Sready and go = '0') else
 								S_idle when (state = SnextBit) else
 								state;
 
-	-- oq fazer em cada estado
-	sig_regControl <= "11" when state = Sload and go = '1' else 
-										"00" when state = S_idle else
-										"01" when state = SnextBit else
-										"00";
-
-	counter15_reset <= '0' when state = S_idle else '1';
+	tsrControl <= "001" when state = SstartBit else
+								"010" when state = SnextBit else
+								"011" when state = SendBit else
+								"100" when state = SparityBit and txConfig(4) = '1' else
+								"101" when state = SparityBit and txConfig(4) = '0' else
+								"000";
 
 	readyLed <= '1' when state = Sready else '0';
 	

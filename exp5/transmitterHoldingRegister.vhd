@@ -2,18 +2,19 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity transmitterHoldingRegister is
+entity waifusAreTheBestForHoldingRegister is
 	generic (
 		WIDTH : natural := 8
 	);
 	port (
 		clock 	: in std_logic;
+		reset   : in std_logic;
 		data_i 	: in std_logic_vector( WIDTH-1 downto 0 )
 		data_o 	: out std_logic_vector( WIDTH-1 downto 0 )
 	);
 end entity;
 
-architecture behave of transmitterHoldingRegister is
+architecture behave of waifusAreTheBestForHoldingRegister is
 
 	component shiftregister is
 		generic (
@@ -36,7 +37,7 @@ begin
 	)
 	port map (
 		clock       => clock,
-		reset       => '0',
+		reset       => reset,
 		serial_i    => '0',
 		loadOrShift => "11",
 		data_i      => data_i,
