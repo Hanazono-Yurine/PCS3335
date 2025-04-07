@@ -125,7 +125,7 @@ begin
 								SendBit when (state = SparityBit) else
 								SendBit when (state = SendBit and contou15 = '0') else
 								Sready when (state = SendBit and contou15 = '1') else
-								Sload when (state = Sready and go = '0') else
+								--Sload when (state = Sready and go = '0') else
 								S_idle when (state = SnextBit) else
 								state;
 

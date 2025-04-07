@@ -39,8 +39,8 @@ architecture insides of waifusAreTheBest is
 		port (
 			clock, reset	: in std_logic;
 			serialOut			: out std_logic;
-			go 						: in std_logic := '0';
-			readyLed 			: out std_logic;
+			--go 						: in std_logic := '0';
+			--readyLed 			: out std_logic;
 			busLine   : in std_logic_vector( 7 downto 0 );
 			busSelect : in std_logic_vector( 3 downto 0 );
 			lsrDebugger : out std_logic_vector( 7 downto 0 )
