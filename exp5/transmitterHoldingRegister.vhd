@@ -9,6 +9,7 @@ entity waifusAreTheBestForHoldingRegister is
 	port (
 		clock 	: in std_logic;
 		reset   : in std_logic;
+		load    : in std_logic;
 		data_i 	: in std_logic_vector( WIDTH-1 downto 0 );
 		data_o 	: out std_logic_vector( WIDTH-1 downto 0 )
 	);
@@ -29,6 +30,8 @@ architecture behave of waifusAreTheBestForHoldingRegister is
 		);
 	end component;
 
+	signal loadReg : std_logic_vector( 1 downto 0);
+
 begin
 
 	THR: shiftregister
@@ -39,11 +42,13 @@ begin
 		clock       => clock,
 		reset       => reset,
 		serial_i    => '0',
-		loadOrShift => "11",
+		loadOrShift => loadReg,
 		data_i      => data_i,
 		data_o      => data_o
 		--serial_o_r  => serial
 		--serial_o_l  => serial_o_l
 	);
+
+	loadReg <= "11" when load = '1' else "00";
 
 end architecture;

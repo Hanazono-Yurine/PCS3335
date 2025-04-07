@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity transmitterTimingControl is
 	port (
 		clock, reset        : in std_logic;
-		go                  : in std_logic := '0';
+		thrSend             : in std_logic := '0';
 		txConfig            : in std_logic_vector(6 downto 0);
 		-- 000 - TSR faz nada
 		-- 001 - TSR Envia o Start Bit
@@ -15,7 +15,7 @@ entity transmitterTimingControl is
 		-- 101 - TSR Envia o bit de paridade Impar
 		-- 111 - TSR Faz load do THR
 		tsrControl          : out std_logic_vector(2 downto 0);
-		readyLed            : out std_logic
+		lsrControl          : out std_logic_vector(1 downto 0)
 	);
 end entity;
 
@@ -45,6 +45,10 @@ architecture rtl of transmitterTimingControl is
 	signal totalBitsTX : std_logic_vector( 4 downto 0 ) := std_logic_vector(to_unsigned( 11, 5 )); -- In binary = 1011
 
 	signal sendParityBit : std_logic := '0';
+
+	signal lsrBits : std_logic_vector( 1 downto 0 ) := (others => '0');
+
+	signal thrHasData : std_logic;
 
 	--fsm
 	type state_type is (Sreset, Sload, S_idle, SstartBit, SnextBit, SparityBit, SendBit, Sready);
@@ -103,6 +107,15 @@ begin
 	counter15_en <= '0' when counter15_out = STD_LOGIC_VECTOR(to_unsigned(14,4)) else
 		'1';  
 
+	process(thrSend, state)
+	begin
+		if rising_edge(thrSend) then
+			thrHasData <= '1';
+		elsif state = Sload then
+			thrHasData <= '0';
+		end if;
+	end process;
+
 	-- process padrao de procimo estado da fsm
 	process(clock, reset)
 	begin
@@ -115,17 +128,17 @@ begin
 
 	-- logica proximo estado
 	next_state <= Sready when (state = Sreset) else
-								SstartBit when (state = Sready and go = '1') else
+								SstartBit when (state = Sready and thrHasData = '1') else
 								Sload when (state = SstartBit) else
 								S_idle when (state = Sload) else
 								S_idle when (state = S_idle and contou15 = '0') else
 								SnextBit when (state = S_idle and contou15 = '1' and counted_bits = '0') else
 								SparityBit when (state = S_idle and contou15 = '1' and counted_bits = '1' and txConfig(3) = '1') else
+								SparityBit when (state = SparityBit and contou15 = '0') else
 								SendBit when (state = S_idle and contou15 = '1' and counted_bits = '1' and txConfig(3) = '0') else
-								SendBit when (state = SparityBit) else
+								SendBit when (state = SparityBit and contou15 = '1') else
 								SendBit when (state = SendBit and contou15 = '0') else
 								Sready when (state = SendBit and contou15 = '1') else
-								--Sload when (state = Sready and go = '0') else
 								S_idle when (state = SnextBit) else
 								state;
 
@@ -136,6 +149,9 @@ begin
 								"101" when state = SparityBit and txConfig(4) = '0' else
 								"000";
 
-	readyLed <= '1' when state = Sready else '0';
+	lsrBits(1) <= thrHasData;
+	lsrBits(0) <= '1' when state = Sready and thrHasData = '0' else '0';
+
+	lsrControl <= lsrBits;
 	
 end architecture;

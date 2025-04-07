@@ -2,18 +2,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity divisorLatch is
-	generic (
-		WIDTH : natural := 8
-	);
+entity waifusAreTheBestForDivisorLatch is
 	port (
 		clock 	: in std_logic;
-		data_i 	: in std_logic_vector( WIDTH-1 downto 0 );
-		data_o 	: out std_logic_vector( WIDTH-1 downto 0 )
+		data_i 	: in std_logic_vector( 7 downto 0 );
+		data_o 	: out std_logic_vector( 7 downto 0 )
 	);
 end entity;
 
-architecture behave of divisorLatch is
+architecture behave of waifusAreTheBestForDivisorLatch is
 
 	component shiftregister is
 		generic (
@@ -31,9 +28,6 @@ architecture behave of divisorLatch is
 begin
 
 	DL: shiftregister
-	generic map (
-		WIDTH => WIDTH
-	)
 	port map (
 		clock       => clock,
 		reset       => '0',
