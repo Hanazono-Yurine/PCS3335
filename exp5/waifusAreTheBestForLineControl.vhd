@@ -7,7 +7,7 @@ entity waifusAreTheBestForLineControl is
 		clockInput	: in std_logic;
 		reset 			: in std_logic;
 		lcrInput		: in std_logic_vector( 7 downto 0 );
-		lcrOutput		: in std_logic_vector( 7 downto 0 );
+		lcrOutput		: out std_logic_vector( 7 downto 0 )
 	);
 end entity;
 

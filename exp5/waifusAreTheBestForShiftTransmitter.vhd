@@ -8,7 +8,7 @@ entity waifusAreTheBestForShiftTransmitter is
 		reset           : in std_logic;
 		tsrDataInput		: in std_logic_vector( 7 downto 0 );
 		tsrControl      : in std_logic_vector(2 downto 0);
-		tsrOutput       : out std_logic;
+		tsrOutput       : out std_logic
 	);
 end entity;
 
@@ -34,8 +34,8 @@ architecture insides of waifusAreTheBestForShiftTransmitter is
 
 begin
 
-	parityOdd <= xor tsrInput when tsrControl = "001" else '1';
-	parityEven <= not (xor tsrInput) when tsrControl = "001" else '1';
+	parityOdd <= '1' when tsrControl = "001" else '1';
+	parityEven <= not '1' when tsrControl = "001" else '1';
 
 	TSR : shiftregister
 	generic map (
@@ -46,7 +46,7 @@ begin
 		reset       => reset,
 		serial_i    => '0',
 		loadOrShift => registerControl,
-		data_i      => tsrInput,
+		data_i      => tsrDataInput,
 		--data_o      => tsrOutput
 		serial_o_r  => serial_out
 		--serial_o_l  => serial_o_l
@@ -62,6 +62,6 @@ begin
 										 "01" when tsrControl = "010" else
 										 "00";
 						 
-	tsrOutput < sendBit;
+	tsrOutput <= sendBit;
 
 end architecture;

@@ -9,7 +9,7 @@ entity waifusAreTheBestForHoldingRegister is
 	port (
 		clock 	: in std_logic;
 		reset   : in std_logic;
-		data_i 	: in std_logic_vector( WIDTH-1 downto 0 )
+		data_i 	: in std_logic_vector( WIDTH-1 downto 0 );
 		data_o 	: out std_logic_vector( WIDTH-1 downto 0 )
 	);
 end entity;
@@ -41,7 +41,7 @@ begin
 		serial_i    => '0',
 		loadOrShift => "11",
 		data_i      => data_i,
-		data_o      => data_o,
+		data_o      => data_o
 		--serial_o_r  => serial
 		--serial_o_l  => serial_o_l
 	);

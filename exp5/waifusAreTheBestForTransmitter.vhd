@@ -6,8 +6,6 @@ entity waifusAreTheBestForTransmitter is
 	port (
 		clock, reset	: in std_logic;
 		serialOut			: out std_logic;
-		go 						: in std_logic := '0';
-		readyLed 			: out std_logic;
 		busLine   : in std_logic_vector( 7 downto 0 );
 		busSelect : in std_logic_vector( 3 downto 0 );
 		lsrDebugger : out std_logic_vector( 7 downto 0 )
@@ -31,7 +29,7 @@ architecture rtl of waifusAreTheBestForTransmitter is
 			clockInput	: in std_logic;
 			reset 			: in std_logic;
 			lcrInput		: in std_logic_vector( 7 downto 0 );
-			lcrOutput		: in std_logic_vector( 7 downto 0 );
+			lcrOutput		: out std_logic_vector( 7 downto 0 )
 		);
 	end component;
 
@@ -40,7 +38,7 @@ architecture rtl of waifusAreTheBestForTransmitter is
 			clockInput	: in std_logic;
 			reset 			: in std_logic;
 			lsrInput		: in std_logic_vector( 7 downto 0 );
-			lsrOutput		: in std_logic_vector( 7 downto 0 );
+			lsrOutput		: out std_logic_vector( 7 downto 0 )
 		);
 	end component;
 
@@ -50,7 +48,7 @@ architecture rtl of waifusAreTheBestForTransmitter is
 			reset           : in std_logic;
 			tsrDataInput		: in std_logic_vector( 7 downto 0 );
 			tsrControl      : in std_logic_vector(2 downto 0);
-			tsrOutput       : out std_logic;
+			tsrOutput       : out std_logic
 		);
 	end component;
 
@@ -60,7 +58,8 @@ architecture rtl of waifusAreTheBestForTransmitter is
 		);
 		port (
 			clock 	: in std_logic;
-			data_i 	: in std_logic_vector( WIDTH-1 downto 0 )
+			reset           : in std_logic;
+			data_i 	: in std_logic_vector( WIDTH-1 downto 0 );
 			data_o 	: out std_logic_vector( WIDTH-1 downto 0 )
 		);
 	end component;
@@ -88,8 +87,8 @@ begin
 		reset      => reset,
 		txConfig   => lcr_o( 6 downto 0 ),
 		tsrControl => ttcTSRControl,
-		go         => go,
-		readyLed   => readyLed
+		go         => '1'
+		--readyLed   => readyLed
 	);
 
 	TSR : waifusAreTheBestForShiftTransmitter
@@ -97,8 +96,8 @@ begin
 		clockInput      => clock,
 		reset           => reset,
 		tsrDataInput    => thrOutput,
-		tsrControl      => ttcTSRControl,
-		tsrOutput       => readyLed
+		tsrControl      => ttcTSRControl
+		--tsrOutput       => readyLed
 	);
 
 	THR : waifusAreTheBestForHoldingRegister
@@ -121,8 +120,8 @@ begin
 	port map (
 		clockInput => clock,
 		reset      => reset,
-		lsrInput   => lsr_i,
-		lsrOutput  => lsr_o
+		lsrInput   => lsr_i
+		--lsrOutput  => lsr_o
 	);
 
 	lsrDebugger <= lsr_o;

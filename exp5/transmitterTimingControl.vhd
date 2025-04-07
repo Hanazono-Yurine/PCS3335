@@ -138,6 +138,4 @@ begin
 
 	readyLed <= '1' when state = Sready else '0';
 	
-	reg_loadOrShift <= sig_regControl;
-
 end architecture;
