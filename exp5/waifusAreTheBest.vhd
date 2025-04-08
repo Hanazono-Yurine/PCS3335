@@ -4,6 +4,10 @@ use ieee.numeric_std.all;
 
 entity waifusAreTheBest is
 	port (
+		ledDebugTop : out std_logic_vector(7 downto 0);
+		clockDebug : out std_logic;
+		loadDebug : out std_logic;
+		
 		clock 			: in std_logic;
 		reset 			: in std_logic;
 		--desafio
@@ -33,6 +37,8 @@ architecture insides of waifusAreTheBest is
 		);
 	end component;
 
+
+
 	component ip_pll_50MHz is
 		port (
 			refclk   : in  std_logic := '0'; --  refclk.clk
@@ -44,6 +50,7 @@ architecture insides of waifusAreTheBest is
 
 	component waifusAreTheBestForTransmitter is
 		port (
+			ledDebug : out std_logic_vector(7 downto 0);
 			clock, reset	: in std_logic;
 			thrSend       : in std_logic;
 			lcrConfig     : in std_logic_vector( 6 downto 0 );
@@ -93,7 +100,7 @@ architecture insides of waifusAreTheBest is
 
 	-- Bus Lines
 	-- Tem 8 bits, em que o oitavo bit é o load e o resto os dados
-	signal lcrBusLine : std_logic_vector( 8 downto 0 ) := (others => '0');
+	signal lcrBusLine : std_logic_vector( 8 downto 0 ) := "100011011";
 	signal thrBusLine : std_logic_vector( 8 downto 0 ) := (others => '0');
 
 	-- Seleciona qual registrador enviar os dados
@@ -115,7 +122,14 @@ architecture insides of waifusAreTheBest is
 	signal divisorMostBits : std_logic_vector( 7 downto 0 ) := (others => '0');
 	signal divisorBits : std_logic_vector( 15 downto 0 ) := (others => '0');
 
+	
+	signal sigLeds : std_logic_vector( 7 downto 0 ) := (others => '0');
+
 begin
+
+	loadDebug <= busLine(8);
+
+	ledDebugTop <= sigLeds;
 
 	baka: ip_pll_50MHz
 	port map (
@@ -131,6 +145,8 @@ begin
 		divisor 	=> divisorBits,
 		baudOut_n => clock_brg
 	);
+
+	clockDebug <= clock_brg;
 
 	DL_L : waifusAreTheBestForDivisorLatch
 	port map (
@@ -150,13 +166,14 @@ begin
 
 	transmitter : waifusAreTheBestForTransmitter
 	port map (
+		ledDebug   => sigLeds,
 		clock       => clock_brg,
 		reset       => reset,
-		thrSend     => thrBusLine(8),
+		thrSend     => busLine(8),
 		lcrConfig   => lcr_o( 6 downto 0),
 		thrData     => thrOutput,
 		serialOut   => serialOutOut,
-		lsrStatus   => lsrDebugger(6 downto 5)
+		lsrStatus   => lsr_i(6 downto 5)
 	);
 
 	LCR : waifusAreTheBestForLineControl
@@ -179,13 +196,13 @@ begin
 	port map (
 		clock   => clock_brg,
 		reset   => reset,
-		load    => thrBusLine( 8 ),
+		load    => busLine( 8 ),
 		data_i  => thrBusLine( 7 downto 0 ),
 		data_o  => thrOutput
 	);
 
 	thrBusLine <= busLine when busSelect(0) = '1' else (others => '0');
-	lcrBusLine <= busLine when busSelect(1) = '1' else (others => '0');
+	lcrBusLine <= busLine when busSelect(0) = '0' else (others => '0');
 
 	serial_out <= serialOutOut;
 

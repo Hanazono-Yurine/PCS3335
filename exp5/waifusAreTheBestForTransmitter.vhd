@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity waifusAreTheBestForTransmitter is
 	port (
+		ledDebug : out std_logic_vector(7 downto 0);
 		clock, reset	: in std_logic;
 		thrSend       : in std_logic;
 		lcrConfig     : in std_logic_vector( 6 downto 0 );
@@ -17,6 +18,7 @@ architecture rtl of waifusAreTheBestForTransmitter is
 
 	component transmitterTimingControl is
 		port (
+			ledDebug : out std_logic_vector(7 downto 0);
 			clock, reset : in std_logic;
 			thrSend      : in std_logic;
 			txConfig     : in std_logic_vector( 6 downto 0 );
@@ -44,9 +46,10 @@ begin
 
 	TTC: transmitterTimingControl
 	port map (
+		ledDebug   => ledDebug,
 		clock      => clock,
 		reset      => reset,
-		thrSend    => '1',
+		thrSend    => thrSend,
 		txConfig   => lcrConfig,
 		tsrControl => ttcTSRControl,
 		lsrControl => lsrStatus

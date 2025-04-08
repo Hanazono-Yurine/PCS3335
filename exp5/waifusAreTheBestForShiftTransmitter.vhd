@@ -28,14 +28,17 @@ architecture insides of waifusAreTheBestForShiftTransmitter is
 	end component;
 
 	signal parityOdd, parityEven : std_logic := '0';
-	signal sendBit, serial_out : std_logic := '0';
+	signal sendBit, serial_out : std_logic := '1';
 	signal loadFromTHR : std_logic := '0';
 	signal registerControl : std_logic_vector( 1 downto 0);
 
 begin
 
-	parityOdd <= '1' when tsrControl = "001" else '1';
-	parityEven <= not '1' when tsrControl = "001" else '1';
+	-- So "calcula" a paridade quando for pra dar load nos dados
+	parityOdd <= (    tsrDataInput(7) xor tsrDataInput(6) xor tsrDataInput(5) xor tsrDataInput(4)
+							  xor tsrDataInput(3) xor tsrDataInput(2) xor tsrDataInput(1) xor tsrDataInput(0)) when tsrControl = "001" else '1';
+	parityEven <= not (    tsrDataInput(7) xor tsrDataInput(6) xor tsrDataInput(5) xor tsrDataInput(4)
+							       xor tsrDataInput(3) xor tsrDataInput(2) xor tsrDataInput(1) xor tsrDataInput(0)) when tsrControl = "001" else '1';
 
 	TSR : shiftregister
 	generic map (
