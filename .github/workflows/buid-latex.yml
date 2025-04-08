@@ -12,7 +12,9 @@ on:
     branches:
       - master
     paths:
-      - 'relatorios/**'
+      - relatorios/**
+    tags-ignore:
+      - "*"
 
 jobs:
   changed-files:
