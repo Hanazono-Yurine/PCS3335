@@ -48,7 +48,7 @@
 
 \title{
 	Laboratório Digital A - PCS3335
-	\\ Planejamento da Experiência 5
+	\\ Relatório da Experiência 5
 }
 
 \author{
@@ -153,10 +153,22 @@
 	
 	
 	\section*{Testes}
+	
+	\subsection*{Comentários}
+	
+	A entidade elaborada não apresentou funcionamento correto. 
+	Problema: os bits não eram envidados corretamente.
+	A sequência de bits envidada não estava correspondendo ao bits carregados no THR.
+	O bit paridade também não estava sendo enviado corretamente.
+	\par
+	Uma possibilidade para a causa do problema é a grande complexidade da FSM utilizada. 
+	A dupla irá implementar a uart novamente, dessa vez com utilizando uma FSM mais simples.
+	
+	\subsection*{Resultados dos testes}
 
 	\begin{itemize}
 		\item bits adequadamente envidados em 9600bps.
-		\par Resultado: 
+		\par Resultado: SUCESSO
 		
 		\item Character Length
 		\begin{table}[H]
@@ -164,10 +176,10 @@
 				\begin{tabular}{|l|l|l|l|}
 					\hline
 					LCR\_bit 0 & LCR\_bit 1 & Character Length & Resultado \\ \hline
-					0     & 0     & 5 bits           &           \\ \hline
-					0     & 1     & 6 bits           &           \\ \hline
-					1     & 0     & 7 bits           &           \\ \hline
-					1     & 1     & 8 bits           &           \\ \hline
+					0     & 0     & 5 bits           &      FALHA     \\ \hline
+					0     & 1     & 6 bits           &    FALHA       \\ \hline
+					1     & 0     & 7 bits           &FALHA           \\ \hline
+					1     & 1     & 8 bits           &FALHA           \\ \hline
 				\end{tabular}
 			\end{center}
 		\end{table}
@@ -177,12 +189,12 @@
 			\begin{center}
 				\begin{tabular}{|l|l|l|l|l|}
 					\hline
-						LCR\_bit 2 & LCR\_bit 0 & LCR\_bit 1 & Quant. bitStop & Resultado \\ \hline
-					0          & \#         & \#         & 1              &           \\ \hline
-					1          & 0          & 0          & 1,5            &           \\ \hline
-					1          & 0          & 1          & 2              &           \\ \hline
-					1          & 1          & 0          & 2              &           \\ \hline
-					1          & 1          & 1          & 2              &           \\ \hline
+					LCR\_bit 2 & LCR\_bit 0 & LCR\_bit 1 & Quant. bitStop & Resultado \\ \hline
+					0          & \#         & \#         & 1              & FALHA          \\ \hline
+					1          & 0          & 0          & 1,5            & FALHA          \\ \hline
+					1          & 0          & 1          & 2              & FALHA          \\ \hline
+					1          & 1          & 0          & 2              & FALHA          \\ \hline
+					1          & 1          & 1          & 2              & FALHA          \\ \hline
 				\end{tabular}
 			\end{center}
 		\end{table}
@@ -193,20 +205,20 @@
 				\begin{tabular}{|l|l|l|l|l|}
 					\hline
 					LCR\_bit 3 & LCR\_bit 5 & LCR\_bit 4 & bit Paridade     & Resultado \\ \hline
-					0          & \#         & \#         & SEM bit paridade &           \\ \hline
-					1          & 0          & 0          & Paridade IMPAR   &           \\ \hline
-					1          & 0          & 1          & Paridade PAR     &           \\ \hline
-					1          & 1          & 0          & 1                &           \\ \hline
-					1          & 1          & 1          & 0                &           \\ \hline
+					0          & \#         & \#         & SEM bit paridade & FALHA          \\ \hline
+					1          & 0          & 0          & Paridade IMPAR   & FALHA          \\ \hline
+					1          & 0          & 1          & Paridade PAR     & FALHA          \\ \hline
+					1          & 1          & 0          & 1                & FALHA          \\ \hline
+					1          & 1          & 1          & 0                & FALHA          \\ \hline
 				\end{tabular}
 			\end{center}
 		\end{table}
 		
 		\item Quando \texttt{LCR\_bit 6} = 1 $\Rightarrow$ \texttt{serial\_out} = 0. 
-		\par Resultado: 
+		\par Resultado: SUCESSO
 		
 		\item Ao ativar e desativa o reset, volta ao estado inicial. 
-		\par Resultado: 
+		\par Resultado: SUCESSO
 		
 	\end{itemize}
 	
