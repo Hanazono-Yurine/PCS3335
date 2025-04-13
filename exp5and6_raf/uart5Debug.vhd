@@ -16,7 +16,7 @@ end entity;
 
 architecture rtl of uart5Debug is
 
-	# ========================================= COMPONENTS ================================	
+	-- ========================================= COMPONENTS ================================	
 	component ip_pll_50MHz is
         port (
             refclk   : in  std_logic := '0'; --  refclk.clk
@@ -59,7 +59,7 @@ architecture rtl of uart5Debug is
 		);
 	end component;
 
-	# ============================================= SIGNAL =============================================
+	-- ============================================= SIGNAL =============================================
 
 	--lacth divisor
 	signal LD_MS_out: std_logic_vector(7 downto 0);
@@ -71,55 +71,42 @@ architecture rtl of uart5Debug is
 	signal clock1_8MHz, clock: std_logic := '1';
 
 	-- Registers parallel input and output
-	signal THR_out, TSR_in, TSR_out, LCR_in, LCR_out, LSR_in, LSR_out: std_logic := std_logic_vector(7 downto 0);
+	signal THR_out, LCR_in, LCR_out, LSR_in, LSR_out: std_logic_vector(7 downto 0);
+	signal TSR_in, TSR_out: std_logic_vector(8 downto 0) := (others => '1');
 	-- Registers load or shit
 	signal THR_load, TSR_L_or_S: std_logic_vector(1 downto 0) := "00";
 	-- Registers serial input and output
 	signal TSR_serialOut: std_logic := '1';
 
-	-- MUX serial Output Control
-	signal serialOutControl : std_logic_vector(1 downto 0) := "00"; 
-	-- 00 => BIT_STOP
-	-- 01 => TSR_out
-	-- 01 => break
-	-- 11 => 
-
 	-- counters values
 	signal valueTransmBitCounter, valueClockCounter : std_logic_vector(3 downto 0) := "0000";
 	-- counters reset
-	signal resetTransmBitCounter, resetClockCounter: std_logic := '0';
+	signal resetTransmBitCounter, resetClockCounter, resetStopBitCounter: std_logic := '0';
 	-- counters enable
-	signal enTransmBitCounter, enClockCounter: std_logic := '0';
+	signal enTransmBitCounter, enClockCounter, enStopBitCounter : std_logic := '0';
 
 	signal numberBitsToTransmit: std_logic_vector(3 downto 0) := "0000";
 
-	signal sig_serialOut: std_logic := '1';
-	signal sig_regControl: std_logic_vector(1 downto 0);
-	signal sig_desloca, en_desloca, reset_desloca: std_logic := '0';
-	signal counterClkDiv16: std_logic_vector(3 downto 0); 
-	signal counterDeslocaOut: std_logic_vector(6 downto 0);
+	signal numberOfClocksForStopBit, valueStopBitCounter: std_logic_vector(4 downto 0) := "00000";
 
-	signal counter15_out: std_logic_vector(3 downto 0);
-	
-	
-	signal clocks_rising : std_logic := '0';
-	signal clocks_reset : std_logic := '0';
+	signal TransmittedAllBits, transmittedABit, TransmittedAllStopBits : std_logic := '0';
 
-	signal TransmittedAllBits, transmittedABit, counted_bit_enable : std_logic := '0';
+	signal valueClockCounterIs14 : std_logic := '0';
 
-	signal counter15_reset, counter15_en, valueClockCounterIs14 : std_logic := '0';
+	-- parity
+	signal parityBit, parityBitEven: std_logic := '1';
 
 
 
 
 
-	# ============================================= FSM STATES =============================================
-    type state_type is (Sreset, Sload, S_idle, SnextBit, Sready);
+	-- ============================================= FSM STATES =============================================
+    type state_type is (Sreset, Sload, S_idle, SnextBit, SstopBit, Sready);
     signal state, next_state: state_type := Sload;
 
 begin
 
-	# ============================================= INSTANCES =============================================
+	-- ============================================= INSTANCES =============================================
 	--ip_pll
     ip_pll: ip_pll_50MHz
     port map (
@@ -128,7 +115,7 @@ begin
         outclk_0 => clock1_8MHz
     );
 
-	# ************************************* REGISTERS
+	-- ************************************* REGISTERS
 	latchDivisor_MS: shiftregister
 	generic map (
 	  WIDTH => 8
@@ -187,7 +174,7 @@ begin
 
 	TSR: shiftregister --Transmitter Shift Register
     generic map (
-      WIDTH => 8
+      WIDTH => 9
     )
     port map (
       clock       => clock,
@@ -230,9 +217,9 @@ begin
       --serial_o_l  => sig_reg_serial_o_l
     );
 
-	# ************************************* COUNTERS
+	-- ************************************* COUNTERS
 
-	transmitted_Bit_Counter: counter -- counter of transmitted Bit (bits data + 1 bit paraty)
+	transmitted_Bit_Counter: counter -- counter of transmitted Bit (bits data + 0 or 1 bit paraty)
     generic map (
         WIDTH => 4
     )
@@ -246,20 +233,23 @@ begin
         data_o => valueTransmBitCounter
     );
 
-	resetTransmBitCounter <= '0' when state = Sload or state = S_idle else '1';
+	resetTransmBitCounter <= '0' when state = SnextBit or state = S_idle else '1';
 
 	enTransmBitCounter <= '0' when valueTransmBitCounter = numberBitsToTransmit else '1'; 
 
 	transmittedABit <= '1' when state = SnextBit else '0';
 
-	TransmittedAllBits <= '1' when valueTransmBitCounter = numberBitsToTransmit else
-		'0'; 
+	TransmittedAllBits <= '1' when valueTransmBitCounter = numberBitsToTransmit else '0'; 
 
 	numberBitsToTransmit <= 
-		std_logic_vector(to_unsigned(5+1,8)) when LCR_out(1 downto 0) = "00" else
-		std_logic_vector(to_unsigned(6+1,8)) when LCR_out(1 downto 0) = "01" else
-		std_logic_vector(to_unsigned(7+1,8)) when LCR_out(1 downto 0) = "10" else
-		std_logic_vector(to_unsigned(8+1,8)) when LCR_out(1 downto 0) = "11";
+		std_logic_vector(to_unsigned(5+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
+		std_logic_vector(to_unsigned(6+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
+		std_logic_vector(to_unsigned(7+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
+		std_logic_vector(to_unsigned(8+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
+		std_logic_vector(to_unsigned(5+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
+		std_logic_vector(to_unsigned(6+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
+		std_logic_vector(to_unsigned(7+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
+		std_logic_vector(to_unsigned(8+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
 	 
 
 	clock_Counter: counter -- counter of clock cycles
@@ -282,9 +272,34 @@ begin
 
 	resetClockCounter <= '0' when state = S_idle else '1';
 
+	stop_Bit_Counter: counter -- counter number of clocks for the stop bit
+    generic map (
+        WIDTH => 5
+    )
+    port map (
+        clock  => clock,
+        reset  => resetStopBitCounter,
+        enable => enStopBitCounter,
+        load   => '0',
+        up     => '1',
+        data_i => (others => '0'),
+        data_o => valueStopBitCounter
+    );
+
+	TransmittedAllStopBits <= '1' when valueStopBitCounter = numberOfClocksForStopBit else '0'; -- ativa o sinal valueClockCounterIs14 quando o contador tiver valor 14
+
+	enStopBitCounter <= '0' when valueStopBitCounter = numberOfClocksForStopBit else '1'; -- trava o contador em 14 
+
+	resetStopBitCounter <= '0' when state = SstopBit else '1';
+
+	numberOfClocksForStopBit <= 
+		std_logic_vector(to_unsigned(15,5)) when LCR_out(2) = '0' else -- 1 bit stop
+		std_logic_vector(to_unsigned(23,5)) when LCR_out(2) & LCR_out(1 downto 0)  = "100" else -- 1,5 bits stop 
+		std_logic_vector(to_unsigned(31,5)); -- 2 bits stop
+
 	
-	# ============================================= FSM PROCESS =============================================
-	-- process padrao de procimo estado da fsm
+	-- ============================================= FSM PROCESS =============================================
+	-- process padrao de proximo estado da fsm
 	fsm: process(clock, reset)
 	begin
 		if reset = '1' then
@@ -294,29 +309,44 @@ begin
 		end if;
 	end process;
 
-	# ============================================= LOGIC =============================================
+	-- ============================================= LOGIC =============================================
 	-- logica proximo estado
 	next_state <=
-		Sload when (state = Sreset) else
-		S_idle when (state = Sload and go = '1') else
-		S_idle when (state = S_idle and valueClockCounterIs14 = '0') else
-		SnextBit when (state = S_idle and valueClockCounterIs14 = '1' and TransmittedAllBits = '0') else
-		Sready when (state = S_idle and valueClockCounterIs14 = '1' and TransmittedAllBits = '1') else
-		Sready when (state = Sready and go = '1') else
-		Sload when (state = Sready and go = '0') else
-		S_idle when (state = SnextBit) else
+		Sready   when (state = Sreset)                  else
+		Sready   when (state = Sready   and load = '0') else
+		Sload    when (state = Sready   and load = '1') else
+		S_idle   when (state = Sload)                   else
+		S_idle   when (state = S_idle   and valueClockCounterIs14 = '0')                              else
+		SnextBit when (state = S_idle   and valueClockCounterIs14 = '1' and TransmittedAllBits = '0') else
+		S_idle   when (state = SnextBit)                                                              else  
+		SstopBit when (state = S_idle   and valueClockCounterIs14 = '1' and TransmittedAllBits = '1') else
+		SstopBit when (state = SstopBit and TransmittedAllStopBits = '0')                             else
+		Sready   when (state = SstopBit and TransmittedAllStopBits = '1')                             else
 		state;
 
-	-- oq fazer em cada estado
-	sig_regControl <= "11" when state = Sload and go = '1' else 
-					  "00" when state = S_idle else
-					  "01" when state = SnextBit else
-					  "00";
+	TSR_L_or_S <= "11" when state = Sload else 
+				"00" when state = S_idle else
+				"01" when state = SnextBit or state = SstopBit else
+				"00";
 
-	counter15_reset <= '0' when state = S_idle else '1';
+	parityBitEven <= 
+		THR_out(4) xor THR_out(3) xor THR_out(2) xor THR_out(1) xor THR_out(0) 												 when LCR_out(1 downto 0) = "00" else 
+		THR_out(5) xor THR_out(4) xor THR_out(3) xor THR_out(2) xor THR_out(1) xor THR_out(0) 								 when LCR_out(1 downto 0) = "01" else
+		THR_out(6) xor THR_out(5) xor THR_out(4) xor THR_out(3) xor THR_out(2) xor THR_out(1) xor THR_out(0)                 when LCR_out(1 downto 0) = "10" else
+		THR_out(7) xor THR_out(6) xor THR_out(5) xor THR_out(4) xor THR_out(3) xor THR_out(2) xor THR_out(1) xor THR_out(0)  when LCR_out(1 downto 0) = "11";
 
-	readyLed <= '1' when state = Sready else '0';
-	
-    serialOut <= sig_serialOut;
+	parityBit <= '1' when LCR_out(3) = '0' else
+				not parityBitEven when LCR_out(5 downto 3) = "001" else
+				parityBitEven     when LCR_out(5 downto 3) = "011" else
+				'1'               when LCR_out(5 downto 3) = "101" else
+				'0'            	  when LCR_out(5 downto 3) = "111";
+
+	TSR_in <= 
+		"111" & parityBit & THR_out(4 downto 0) when LCR_out(1 downto 0) = "00" else 
+		"11"  & parityBit & THR_out(5 downto 0) when LCR_out(1 downto 0) = "01" else
+		"1"   & parityBit & THR_out(6 downto 0) when LCR_out(1 downto 0) = "10" else
+		        parityBit & THR_out(7 downto 0) when LCR_out(1 downto 0) = "11";
+
+	serialOut <= TSR_serialOut when LCR_out(6) = '0' else '1';
 
 end architecture;
