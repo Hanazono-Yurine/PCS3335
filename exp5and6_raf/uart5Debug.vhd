@@ -5,12 +5,14 @@ use ieee.numeric_std.all;
 entity uart5Debug is
 	port (
 		clock50M, reset: in std_logic := '0';
-		load: in std_logic := '0';
-		THR_data : in std_logic_vector(7 downto 0);
+		-- load: in std_logic := '0';
+		-- THR_data : in std_logic_vector(7 downto 0);
 		serialOut: out std_logic;
 
 		--debug
-		clock1_8MHzDebug, clockDebug: out std_logic
+		clock1_8MHzDebug, clockDebug: out std_logic;
+        switches: in std_logic_vector(9 downto 0);
+        leds: out std_logic_vector(9 downto 0)
 	);
 end entity;
 
@@ -96,7 +98,9 @@ architecture rtl of uart5Debug is
 	-- parity
 	signal parityBit, parityBitEven: std_logic := '1';
 
-
+    --DEBUG
+    signal THR_data: std_logic_vector(7 downto 0);
+	signal load: std_logic := '0';
 
 
 
@@ -348,5 +352,12 @@ begin
 		        parityBit & THR_out(7 downto 0) when LCR_out(1 downto 0) = "11";
 
 	serialOut <= TSR_serialOut when LCR_out(6) = '0' else '1';
+
+
+	------------------------------------------ DEBUG
+
+	THR_data <= switches(7 downto 0);
+	load <= switches(9);
+
 
 end architecture;
