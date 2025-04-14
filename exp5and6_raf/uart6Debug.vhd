@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity uart5Debug is
+entity uart6Debug is
 	port (
 		clock50M, reset: in std_logic := '0';
 		-- load: in std_logic := '0';
@@ -16,7 +16,7 @@ entity uart5Debug is
 	);
 end entity;
 
-architecture rtl of uart5Debug is
+architecture rtl of uart6Debug is
 
 	-- ========================================= COMPONENTS ================================	
 	component ip_pll_50MHz is
@@ -73,10 +73,11 @@ architecture rtl of uart5Debug is
 	signal clock1_8MHz, clock: std_logic := '1';
 
 	-- Registers parallel input and output
-	signal THR_out, LCR_in, LCR_out, LSR_in, LSR_out: std_logic_vector(7 downto 0);
+	signal THR_out, LCR_out, LSR_in, LSR_out: std_logic_vector(7 downto 0); 
+	signal LCR_in: std_logic_vector(7 downto 0) := "0" & "0" & "011" & "0" & "11"; -- Divisor Latch Access & Break & Parity & BitStop & Character Length
 	signal TSR_in, TSR_out: std_logic_vector(9 downto 0) := (others => '1');
 	-- Registers load or shit
-	signal THR_load, TSR_L_or_S: std_logic_vector(1 downto 0) := "00";
+	signal THR_load, LCR_load, TSR_L_or_S: std_logic_vector(1 downto 0) := "00";
 	-- Registers serial input and output
 	signal TSR_serialOut: std_logic := '1';
 
@@ -101,7 +102,7 @@ architecture rtl of uart5Debug is
     --DEBUG
     signal THR_data: std_logic_vector(7 downto 0);
 	signal load: std_logic := '0';
-
+	signal load_THR_or_LCR: std_logic := '0';
 
 
 	-- ============================================= FSM STATES =============================================
@@ -174,8 +175,6 @@ begin
       --serial_o_l  => sig_reg_serial_o_l
     );
 
-	THR_load <= "11" when load = '1' else "00";
-
 	TSR: shiftregister --Transmitter Shift Register
     generic map (
       WIDTH => 10
@@ -199,8 +198,8 @@ begin
       clock       => clock,
       reset       => '0',
       serial_i    => '1',
-      loadOrShift => "11",
-      data_i      => "0" & "0" & "011" & "0" & "11", -- Divisor Latch Access & Break & Parity & BitStop & Character Length
+      loadOrShift => LCR_load,
+      data_i      => LCR_in, 
       data_o      => LCR_out
       --serial_o_r  => sig_serialOut
       --serial_o_l  => sig_reg_serial_o_l
@@ -254,7 +253,7 @@ begin
 		std_logic_vector(to_unsigned(1+6+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
 		std_logic_vector(to_unsigned(1+7+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
 		std_logic_vector(to_unsigned(1+8+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
-	 
+	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit
 
 	clock_Counter: counter -- counter of clock cycles
     generic map (
@@ -349,15 +348,30 @@ begin
 		"111" & parityBit & THR_out(4 downto 0) & '0' when LCR_out(1 downto 0) = "00" else 
 		"11"  & parityBit & THR_out(5 downto 0) & '0' when LCR_out(1 downto 0) = "01" else
 		"1"   & parityBit & THR_out(6 downto 0) & '0' when LCR_out(1 downto 0) = "10" else
-				parityBit & THR_out(7 downto 0) & '0' when LCR_out(1 downto 0) = "11";
+		        parityBit & THR_out(7 downto 0) & '0' when LCR_out(1 downto 0) = "11";
 
 	serialOut <= TSR_serialOut when LCR_out(6) = '0' else '1';
 
 
+	LCR_load <= "11" when load = '1' and load_THR_or_LCR = '1' else "00" ;
+	THR_load <= "11" when load = '1' and load_THR_or_LCR = '0' else "00";
+
 	------------------------------------------ DEBUG
 
 	THR_data <= switches(7 downto 0);
+	LCR_in <= switches(7 downto 0);
+
+	load_THR_or_LCR <= switches(8);
 	load <= switches(9);
+
+
+
+
+
+    -------------------------------------------------------------------------------------------------------------------------------------------------
+    -- ======================================================= EXP 6 ============================================================
+    
+    
 
 
 end architecture;

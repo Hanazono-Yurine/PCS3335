@@ -75,7 +75,7 @@ architecture rtl of uart5Debug_2 is
 	-- Registers parallel input and output
 	signal THR_out, LCR_out, LSR_in, LSR_out: std_logic_vector(7 downto 0); 
 	signal LCR_in: std_logic_vector(7 downto 0) := "0" & "0" & "011" & "0" & "11"; -- Divisor Latch Access & Break & Parity & BitStop & Character Length
-	signal TSR_in, TSR_out: std_logic_vector(8 downto 0) := (others => '1');
+	signal TSR_in, TSR_out: std_logic_vector(9 downto 0) := (others => '1');
 	-- Registers load or shit
 	signal THR_load, LCR_load, TSR_L_or_S: std_logic_vector(1 downto 0) := "00";
 	-- Registers serial input and output
@@ -177,7 +177,7 @@ begin
 
 	TSR: shiftregister --Transmitter Shift Register
     generic map (
-      WIDTH => 9
+      WIDTH => 10
     )
     port map (
       clock       => clock,
@@ -245,15 +245,15 @@ begin
 	TransmittedAllBits <= '1' when valueTransmBitCounter = numberBitsToTransmit else '0'; 
 
 	numberBitsToTransmit <= 
-		std_logic_vector(to_unsigned(5+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
-		std_logic_vector(to_unsigned(6+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
-		std_logic_vector(to_unsigned(7+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
-		std_logic_vector(to_unsigned(8+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
-		std_logic_vector(to_unsigned(5+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
-		std_logic_vector(to_unsigned(6+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
-		std_logic_vector(to_unsigned(7+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
-		std_logic_vector(to_unsigned(8+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
-	 
+		std_logic_vector(to_unsigned(1+5+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
+		std_logic_vector(to_unsigned(1+6+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
+		std_logic_vector(to_unsigned(1+7+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
+		std_logic_vector(to_unsigned(1+8+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
+		std_logic_vector(to_unsigned(1+5+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
+		std_logic_vector(to_unsigned(1+6+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
+		std_logic_vector(to_unsigned(1+7+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
+		std_logic_vector(to_unsigned(1+8+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
+	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit
 
 	clock_Counter: counter -- counter of clock cycles
     generic map (
@@ -345,10 +345,10 @@ begin
 				'0'            	  when LCR_out(5 downto 3) = "111";
 
 	TSR_in <= 
-		"111" & parityBit & THR_out(4 downto 0) when LCR_out(1 downto 0) = "00" else 
-		"11"  & parityBit & THR_out(5 downto 0) when LCR_out(1 downto 0) = "01" else
-		"1"   & parityBit & THR_out(6 downto 0) when LCR_out(1 downto 0) = "10" else
-		        parityBit & THR_out(7 downto 0) when LCR_out(1 downto 0) = "11";
+		"111" & parityBit & THR_out(4 downto 0) & '0' when LCR_out(1 downto 0) = "00" else 
+		"11"  & parityBit & THR_out(5 downto 0) & '0' when LCR_out(1 downto 0) = "01" else
+		"1"   & parityBit & THR_out(6 downto 0) & '0' when LCR_out(1 downto 0) = "10" else
+		        parityBit & THR_out(7 downto 0) & '0' when LCR_out(1 downto 0) = "11";
 
 	serialOut <= TSR_serialOut when LCR_out(6) = '0' else '1';
 
