@@ -9,6 +9,10 @@ entity uart6Debug is
 		-- THR_data : in std_logic_vector(7 downto 0);
 		serialOut: out std_logic;
 
+        -- exp 6
+        serialIn: in std_logic;
+        display7seg : out std_logic_vector(6 downto 0);
+
 		--debug
 		clock1_8MHzDebug, clockDebug: out std_logic;
         switches: in std_logic_vector(9 downto 0);
@@ -61,6 +65,16 @@ architecture rtl of uart6Debug is
 		);
 	end component;
 
+    component receiver is
+        port (
+            clock, reset: in std_logic := '0';
+            LCR_out, LSR_out: in std_logic_vector(7 downto 0); 
+            serialIn: in std_logic;
+    
+            display7seg : out std_logic_vector(6 downto 0)
+        );
+    end component;
+
 	-- ============================================= SIGNAL =============================================
 
 	--lacth divisor
@@ -105,9 +119,18 @@ architecture rtl of uart6Debug is
 	signal load_THR_or_LCR: std_logic := '0';
 
 
+
+    -- exp 6
+    signal RSR_out : std_logic_vector(9 downto 0) := (others => '1');
+    signal RSR_L_or_S: std_logic_vector(1 downto 0) := "00";
+    signal sig_display7seg : std_logic_vector(6 downto 0);
+
+
+
+
 	-- ============================================= FSM STATES =============================================
     type state_type is (Sreset, Sload, S_idle, SnextBit, SstopBit, Sready);
-    signal state, next_state: state_type := Sload;
+    signal state, next_state: state_type := Sready;
 
 begin
 
@@ -245,15 +268,15 @@ begin
 	TransmittedAllBits <= '1' when valueTransmBitCounter = numberBitsToTransmit else '0'; 
 
 	numberBitsToTransmit <= 
-		std_logic_vector(to_unsigned(1+5+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
-		std_logic_vector(to_unsigned(1+6+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
-		std_logic_vector(to_unsigned(1+7+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
-		std_logic_vector(to_unsigned(1+8+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
-		std_logic_vector(to_unsigned(1+5+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
-		std_logic_vector(to_unsigned(1+6+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
-		std_logic_vector(to_unsigned(1+7+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
-		std_logic_vector(to_unsigned(1+8+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
-	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit
+		std_logic_vector(to_unsigned(1+5+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
+		std_logic_vector(to_unsigned(1+6+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
+		std_logic_vector(to_unsigned(1+7+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
+		std_logic_vector(to_unsigned(1+8+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
+		std_logic_vector(to_unsigned(1+5+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
+		std_logic_vector(to_unsigned(1+6+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
+		std_logic_vector(to_unsigned(1+7+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
+		std_logic_vector(to_unsigned(1+8+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
+	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit - 1 pq o ele nao vai pro estado NEXT_BIT quando termina de enviar o ultimo bit
 
 	clock_Counter: counter -- counter of clock cycles
     generic map (
@@ -371,7 +394,16 @@ begin
     -------------------------------------------------------------------------------------------------------------------------------------------------
     -- ======================================================= EXP 6 ============================================================
     
-    
+    receiver_inst: receiver
+    port map (
+      clock       => clock,
+      reset       => reset,
+      LCR_out     => LCR_out,
+      LSR_out     => LSR_out,
+      serialIn    => serialIn,
+      display7seg => sig_display7seg
+    );
 
+    display7seg <= sig_display7seg;
 
 end architecture;
