@@ -107,7 +107,7 @@ architecture rtl of uart5Debug_2 is
 
 	-- ============================================= FSM STATES =============================================
     type state_type is (Sreset, Sload, S_idle, SnextBit, SstopBit, Sready);
-    signal state, next_state: state_type := Sload;
+    signal state, next_state: state_type := Sready;
 
 begin
 
@@ -245,15 +245,15 @@ begin
 	TransmittedAllBits <= '1' when valueTransmBitCounter = numberBitsToTransmit else '0'; 
 
 	numberBitsToTransmit <= 
-		std_logic_vector(to_unsigned(1+5+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
-		std_logic_vector(to_unsigned(1+6+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
-		std_logic_vector(to_unsigned(1+7+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
-		std_logic_vector(to_unsigned(1+8+0,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
-		std_logic_vector(to_unsigned(1+5+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
-		std_logic_vector(to_unsigned(1+6+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
-		std_logic_vector(to_unsigned(1+7+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
-		std_logic_vector(to_unsigned(1+8+1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
-	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit
+		std_logic_vector(to_unsigned(1+5+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "000" else
+		std_logic_vector(to_unsigned(1+6+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "001" else
+		std_logic_vector(to_unsigned(1+7+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "010" else
+		std_logic_vector(to_unsigned(1+8+0-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "011" else
+		std_logic_vector(to_unsigned(1+5+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "100" else
+		std_logic_vector(to_unsigned(1+6+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
+		std_logic_vector(to_unsigned(1+7+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
+		std_logic_vector(to_unsigned(1+8+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
+	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit - 1 pq o ele nao vai pro estado NEXT_BIT quando termina de enviar o ultimo bit
 
 	clock_Counter: counter -- counter of clock cycles
     generic map (
