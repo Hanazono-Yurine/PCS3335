@@ -9,7 +9,8 @@ entity receiverTimingControl is
         receivedAllBits, receivedAllStopBits, valueClockCounterIs14 : in std_logic := '0';
 
         RSR_L_or_S : out std_logic_vector(1 downto 0) := "00";
-        stateIs_idle, stateIs_nextBit, stateIs_stopBit : out std_logic := '0'
+        stateIs_idle, stateIs_nextBit, stateIs_stopBit, stateIs_start : out std_logic := '0';
+		leds: out std_logic_vector(9 downto 0)
 	);
 end entity;
 
@@ -64,5 +65,15 @@ begin
     stateIs_nextBit <= '1' when state = SnextBit else '0';
     
 	stateIs_stopBit <= '1' when state = SstopBit else '0';
+
+	stateIs_start <= '1' when state = Sstart else '0';
+
+	leds(0) <= '1' when state = Sready else '0';
+	leds(1) <= '1' when state = Sstart else '0';
+	leds(2) <= '1' when state = S_idle else '0';
+	leds(3) <= '1' when state = SnextBit else '0';
+	leds(4) <= '1' when state = SstopBit else '0';
+	leds(5) <= '1' when state = Sreset else '0';
+	leds(6) <= '1' when receivedStartBit = '1' else '0';
 
 end architecture;

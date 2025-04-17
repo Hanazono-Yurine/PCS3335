@@ -8,7 +8,9 @@ entity receiver is
         LCR_out, LSR_out: in std_logic_vector(7 downto 0); 
         serialIn: in std_logic;
 
-        display7seg : out std_logic_vector(6 downto 0)
+        --display7seg : out std_logic_vector(6 downto 0)
+		RSR_data: out std_logic_vector(9 downto 0);
+		leds: out std_logic_vector(9 downto 0)
 	);
 end entity;
 
@@ -47,7 +49,8 @@ architecture rtl of receiver is
             receivedAllBits, receivedAllStopBits, valueClockCounterIs14 : in std_logic := '0';
     
             RSR_L_or_S : out std_logic_vector(1 downto 0) := "00";
-            stateIs_idle, stateIs_nextBit, stateIs_stopBit : out std_logic := '0'
+            stateIs_idle, stateIs_nextBit, stateIs_stopBit, stateIs_start : out std_logic := '0';
+			leds: out std_logic_vector(9 downto 0)
         );
     end component;
 
@@ -57,7 +60,7 @@ architecture rtl of receiver is
 
     signal RSR_L_or_S: std_logic_vector(1 downto 0) := "00";
 
-    signal receivedStartBit, stateIs_idle, stateIs_nextBit, stateIs_stopBit : std_logic := '0';
+    signal receivedStartBit, stateIs_idle, stateIs_nextBit, stateIs_stopBit, stateIs_start : std_logic := '0';
 
 	-- counters values
 	signal valueReceiverBitCounter, valueClockCounter : std_logic_vector(3 downto 0) := "0000";
@@ -76,6 +79,10 @@ architecture rtl of receiver is
 
 	-- parity
 	signal parityBit, parityBitEven: std_logic := '1';
+
+	--debug
+
+	signal sig_leds: std_logic_vector(9 downto 0);
 
 begin
 
@@ -114,7 +121,7 @@ begin
         data_o => valueReceiverBitCounter
     );
 
-	resetReceiverBitCounter <= '0' when stateIs_nextBit = '1' or stateIs_idle = '1' else '1';
+	resetReceiverBitCounter <= '1' when stateIs_start = '1' else '0'; --******************************************
 
 	enReceiverBitCounter <= '0' when valueReceiverBitCounter = numberBitsToTransmit else '1'; 
 
@@ -191,7 +198,9 @@ begin
       RSR_L_or_S            => RSR_L_or_S,
       stateIs_idle          => stateIs_idle,
       stateIs_nextBit       => stateIs_nextBit,
-      stateIs_stopBit       => stateIs_stopBit
+      stateIs_stopBit       => stateIs_stopBit,
+	  stateIs_start         => stateIs_start,
+	  leds => sig_leds
     );
 
 	-- ============================================= LOGIC =============================================
@@ -211,11 +220,12 @@ begin
 				'0'            	  when LCR_out(5 downto 3) = "111";
 
 
+	RSR_data <= RSR_out;
 
+	leds <= sig_leds;
 
-
-
-
+	receivedStartBit <= '1' when serialIn = '0' else '0'; -- AQUI EH serialIn
+						
 
 
     
