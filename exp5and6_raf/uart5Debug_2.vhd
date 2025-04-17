@@ -10,7 +10,7 @@ entity uart5Debug_2 is
 		serialOut: out std_logic;
 
 		--debug
-		clock1_8MHzDebug, clockDebug: out std_logic;
+		clock1_8MHzDebug, scope: out std_logic;
         switches: in std_logic_vector(9 downto 0);
         leds: out std_logic_vector(9 downto 0)
 	);
@@ -102,7 +102,7 @@ architecture rtl of uart5Debug_2 is
     --DEBUG
     signal THR_data: std_logic_vector(7 downto 0);
 	signal load: std_logic := '0';
-	signal load_THR_or_LCR: std_logic := '0';
+	signal load_DataInLCR: std_logic := '0';
 
 
 	-- ============================================= FSM STATES =============================================
@@ -200,6 +200,7 @@ begin
       serial_i    => '1',
       loadOrShift => LCR_load,
       data_i      => LCR_in, 
+	  --data_i      => "0" & "0" & "011" & "0" & "11", -- Divisor Latch Access & Break & Parity & BitStop & Character Length
       data_o      => LCR_out
       --serial_o_r  => sig_serialOut
       --serial_o_l  => sig_reg_serial_o_l
@@ -236,7 +237,7 @@ begin
         data_o => valueTransmBitCounter
     );
 
-	resetTransmBitCounter <= '0' when state = SnextBit or state = S_idle else '1';
+	resetTransmBitCounter <= '1' when state = Sload else '0'; -- MUDEI ISSO	
 
 	enTransmBitCounter <= '0' when valueTransmBitCounter = numberBitsToTransmit else '1'; 
 
@@ -350,19 +351,32 @@ begin
 		"1"   & parityBit & THR_out(6 downto 0) & '0' when LCR_out(1 downto 0) = "10" else
 		        parityBit & THR_out(7 downto 0) & '0' when LCR_out(1 downto 0) = "11";
 
-	serialOut <= TSR_serialOut when LCR_out(6) = '0' else '1';
+	serialOut <= TSR_serialOut when LCR_out(6) = '0' else '0'; --mudei aqui******************************
 
 
-	LCR_load <= "11" when load = '1' and load_THR_or_LCR = '1' else "00" ;
-	THR_load <= "11" when load = '1' and load_THR_or_LCR = '0' else "00";
+	LCR_load <= "11" when load_DataInLCR = '1' else "00" ;
+	--THR_load <= "11" when load = '1' and load_THR_or_LCR = '0' else "00";
+	THR_load <= "11" when load = '1' else "00";
 
 	------------------------------------------ DEBUG
 
 	THR_data <= switches(7 downto 0);
 	LCR_in <= switches(7 downto 0);
 
-	load_THR_or_LCR <= switches(8);
+	load_DataInLCR <= switches(8);
 	load <= switches(9);
+
+
+	scope <= TSR_serialOut;
+
+	-- Sreset, Sload, S_idle, SnextBit, SstopBit, Sready
+
+	leds(0) <= '1' when state = Sready else '0';
+	leds(1) <= '1' when state = Sload else '0';
+	leds(2) <= '1' when state = S_idle else '0';
+	leds(3) <= '1' when state = SnextBit else '0';
+	leds(4) <= '1' when state = SstopBit else '0';
+	leds(5) <= '1' when state = Sreset else '0';
 
 
 end architecture;
