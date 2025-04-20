@@ -66,7 +66,7 @@ begin
 		std_logic_vector(to_unsigned(1+6+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "101" else
 		std_logic_vector(to_unsigned(1+7+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "110" else
 		std_logic_vector(to_unsigned(1+8+1-1,4)) when LCR_out(3) & LCR_out(1 downto 0) = "111";
-	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 stop bit - 1 pq o ele nao vai pro estado NEXT_BIT quando termina de enviar o ultimo bit
+	    -- 1 bit start + 5 a 8 bit data + 0 ou 1 parity bit - 1 pq o ele nao vai pro estado NEXT_BIT quando termina de enviar o ultimo bit
 
 
 
