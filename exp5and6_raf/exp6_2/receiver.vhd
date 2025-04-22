@@ -189,10 +189,10 @@ begin
     
 
 	parityBitEven <= 
-		RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1) xor RSR_out(0) 												 when LCR_out(1 downto 0) = "00" else 
-		RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1) xor RSR_out(0) 								 when LCR_out(1 downto 0) = "01" else
-		RSR_out(6) xor RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1) xor RSR_out(0)                 when LCR_out(1 downto 0) = "10" else
-		RSR_out(7) xor RSR_out(6) xor RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1) xor RSR_out(0)  when LCR_out(1 downto 0) = "11";
+		RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1) 												 when LCR_out(1 downto 0) = "00" else 
+		RSR_out(6) xor RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1) 								 when LCR_out(1 downto 0) = "01" else
+		RSR_out(7) xor RSR_out(6) xor RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1)                 when LCR_out(1 downto 0) = "10" else
+		RSR_out(8) xor RSR_out(7) xor RSR_out(6) xor RSR_out(5) xor RSR_out(4) xor RSR_out(3) xor RSR_out(2) xor RSR_out(1)  when LCR_out(1 downto 0) = "11";
 
 	parityBit <= '1' when LCR_out(3) = '0' else
 				not parityBitEven when LCR_out(5 downto 3) = "001" else

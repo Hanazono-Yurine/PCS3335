@@ -123,7 +123,7 @@ begin
 	LSR_bit5THRE <= '0' when state = Sload else '1'; 
 
 	--LSR bit 6 TEMT: 1 => nao estou transmitindo
-	LSR_bit6TEMT <= '1' when state = Sready else '1'; 
+	LSR_bit6TEMT <= '1' when state = Sready else '0'; 
 
 	
 
