@@ -48,7 +48,7 @@
 
 \title{
 	Laboratório Digital A - PCS3335
-	\\ Planejamento da Experiência 7
+	\\ Relatório da Experiência 7
 }
 
 \author{
@@ -113,13 +113,13 @@
 			\begin{tabular}{|l|l|l|}
 				\hline
 				clock50M           & PIN\_M9   & Input  \\ \hline
-				display7seg{[}0{]} & PIN\_AA22 & Output \\ \hline
-				display7seg{[}1{]} & PIN\_Y21  & Output \\ \hline
-				display7seg{[}2{]} & PIN\_Y22  & Output \\ \hline
+				display7seg{[}0{]} & PIN\_U21  & Output \\ \hline
+				display7seg{[}1{]} & PIN\_V21  & Output \\ \hline
+				display7seg{[}2{]} & PIN\_W22  & Output \\ \hline
 				display7seg{[}3{]} & PIN\_W21  & Output \\ \hline
-				display7seg{[}4{]} & PIN\_W22  & Output \\ \hline
-				display7seg{[}5{]} & PIN\_V21  & Output \\ \hline
-				display7seg{[}6{]} & PIN\_U21  & Output \\ \hline
+				display7seg{[}4{]} & PIN\_Y22  & Output \\ \hline
+				display7seg{[}5{]} & PIN\_Y21  & Output \\ \hline
+				display7seg{[}6{]} & PIN\_AA22 & Output \\ \hline
 				leds{[}0{]}        & PIN\_AA2  & Output \\ \hline
 				leds{[}1{]}        & PIN\_AA1  & Output \\ \hline
 				leds{[}2{]}        & PIN\_W2   & Output \\ \hline
@@ -130,8 +130,11 @@
 				leds{[}7{]}        & PIN\_U1   & Output \\ \hline
 				leds{[}8{]}        & PIN\_L2   & Output \\ \hline
 				leds{[}9{]}        & PIN\_L1   & Output \\ \hline
-				rbrRead            & PIN\_M9   & Input  \\ \hline
+				rbrRead            & PIN\_C16  & Input  \\ \hline
 				reset              & PIN\_B16  & Input  \\ \hline
+				resetLSR\_bit1\_3  & PIN\_D17  & Input  \\ \hline
+				scope1             & PIN\_H16  & Output \\ \hline
+				scope2             & PIN\_H15  & Output \\ \hline
 				serialIn           & PIN\_M16  & Input  \\ \hline
 				serialOut          & PIN\_N16  & Output \\ \hline
 				switches{[}0{]}    & PIN\_U13  & Input  \\ \hline
@@ -156,31 +159,32 @@
 
 	\begin{itemize}
 		\item bits adequadamente recebidos em 9600bps.
-		\par Resultado: 
+		\par Resultado: SUCESSO
 		
 		\item Ao ativar e desativa o reset, volta ao estado inicial. 
-		\par Resultado: 
+		\par Resultado:  SUCESSO
 		
 		\item Funcionamento correto do RBR.
-		\par Resultado: 
+		\par Resultado:  SUCESSO
 		
 		\item Funcionamento dos bits LSR:
 		
-		\subitem Bit 0: Data Ready (DR) - Resultado: 
+		\subitem Bit 0: Data Ready (DR) - Resultado:  SUCESSO
 		
-		\subitem Bit 1: Overrun Error (OE) - Resultado: 
+		\subitem Bit 1: Overrun Error (OE) - Resultado:  SUCESSO
 		
-		\subitem Bit 2: Parity Error (PE) - Resultado: 
+		\subitem Bit 2: Parity Error (PE) - Resultado:  SUCESSO
 		
-		\subitem Bit 3: Framming Error (FE) - Resultado:
+		\subitem Bit 3: Framming Error (FE) - Resultado: FALHA
 		
 		\item Valor recebido adequadamente exibido no display de 7 segmentos.
-		\par Resultado: 
-		
-		
-		
+		\par Resultado:  SUCESSO
 		
 	\end{itemize}
+	
+	\subsection*{Comentários}
+		Apenas o bit 3 do LSR não apresentou funcionamento correto. O grupo irá repensar a lógica de
+		calculo desse bit.
 	
 	
 \end{document}
