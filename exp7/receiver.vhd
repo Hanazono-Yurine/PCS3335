@@ -14,7 +14,13 @@ entity receiver is
 		LSR_bit2PE : out std_logic := '0';
 		leds: out std_logic_vector(9 downto 0);
 		RBR_lido : in std_logic;
-		RBR_load : out std_logic
+		RBR_load : out std_logic;
+
+		stateIsStopBit : out std_logic;
+		stateIsfinish : out std_logic;
+		stateIsErroStopBit : out std_logic;
+
+		receivedAllStopBits : out std_logic
 	);
 end entity;
 
@@ -67,7 +73,15 @@ architecture rtl of receiver is
 			leds: out std_logic_vector(9 downto 0);
 
 			rbrFoiLido : in std_logic;
-			rbrLoad : out std_logic
+			rbrLoad : out std_logic;
+
+			stateIsfinish : out std_logic;
+			stateIsStopBit : out std_logic;
+			stateIsErroStopBit : out std_logic;
+
+			serialIn : in std_logic;
+
+			receivedAllStopBits_out : out std_logic
 		);
 	end component;
 	-- ============================================= SIGNAL =============================================
@@ -188,7 +202,12 @@ begin
 	  RSR_L_or_S              => RSR_L_or_S,
 	  leds                    => leds,
 		rbrFoiLido              => RBR_lido,
-		rbrLoad                 => RBR_load
+		rbrLoad                 => RBR_load,
+		stateIsfinish           => stateIsfinish,
+		stateIsStopBit => stateIsStopBit,
+		serialIn => serialIn,
+		receivedAllStopBits_out => receivedAllStopBits,
+		stateIsErroStopBit => stateIsErroStopBit
 	);
 
 	-- ============================================= LOGIC =============================================

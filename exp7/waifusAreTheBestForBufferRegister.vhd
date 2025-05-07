@@ -4,7 +4,7 @@ use IEEE.numeric_std.all;
 
 entity waifusAreTheBestForBufferRegister is
 	port (
-		clock, load, read : in std_logic;
+		clock, load, RBR_read : in std_logic;
 		rsrInput : in std_logic_vector(9 downto 0);
 		lido : out std_logic; -- Não pensei em uma palavra em ingles ;P
 		rsrOutput : out std_logic_vector(9 downto 0)
@@ -47,6 +47,6 @@ begin
 
 		rbrLoad <= "11" when load = '1' else "00";
 
-		lido <= read;
+		lido <= RBR_read;
 
 end architecture;

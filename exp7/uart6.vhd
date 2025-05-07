@@ -14,8 +14,10 @@ entity uart6 is
 		rbrRead : in std_logic := '0';
 		--debug
 		switches: in std_logic_vector(9 downto 0);
-		leds: out std_logic_vector(9 downto 0)
+		leds: out std_logic_vector(9 downto 0);
 
+		resetLSR_bit1_3 : in std_logic := '0';
+		scope1, scope2 : out std_logic := '0'
 	);
 end entity;
 
@@ -81,7 +83,12 @@ architecture rtl of uart6 is
 			LSR_bit2PE : out std_logic := '0';
 			leds: out std_logic_vector(9 downto 0);
 			RBR_lido : in std_logic;
-			RBR_load : out std_logic
+			RBR_load : out std_logic;
+
+			stateIsStopBit : out std_logic;
+			stateIsfinish : out std_logic;
+			stateIsErroStopBit : out std_logic;
+			receivedAllStopBits : out std_logic
 		);
 	end component;
 
@@ -97,7 +104,7 @@ architecture rtl of uart6 is
 
 	component waifusAreTheBestForBufferRegister is
 		port (
-			clock, load, read : in std_logic;
+			clock, load, RBR_read : in std_logic;
 			rsrInput : in std_logic_vector(9 downto 0);
 			lido : out std_logic;
 			rsrOutput : out std_logic_vector(9 downto 0)
@@ -142,6 +149,23 @@ architecture rtl of uart6 is
 	signal rbrFoiLido, rbrLoad : std_logic := '0';
 	signal RBR_data: std_logic_vector(9 downto 0);
 
+	-- EXP 7
+
+	signal stateIsfinish, stateIsStopBit, stateIsErroStopBit : std_logic := '0';
+	signal LSR_bit0, LSR_bit1, LSR_bit3  : std_logic := '0';
+
+	signal LSR_load: std_logic_vector(1 downto 0) := "00";
+
+
+
+
+
+
+	signal receivedAllStopBits : std_logic;
+
+
+	signal counter	: unsigned( 15 downto 0 ) := (others => '0');
+
 begin
 
 	-- ============================================= INSTANCES =============================================
@@ -160,8 +184,8 @@ begin
 	port map (
 		clock     => clock,
 		load      => rbrLoad,
-		read      => rbrRead,
-		rsrInput  => RSR_data,
+		RBR_read  => rbrRead,
+		rsrInput  => RSR_data(9 downto 0),
 		lido      => rbrFoiLido,
 		rsrOutput => RBR_data
 	);
@@ -227,10 +251,10 @@ begin
     )
     port map (
       clock       => clock,
-      reset       => '0',
+      reset       => reset,
       serial_i    => '1',
-      loadOrShift => "11",
-      data_i      => "0" & LSR_bit6TEMT & LSR_bit5THRE & "00" & LSR_bit2PE & "00",
+      loadOrShift => LSR_load,
+      data_i      => "0" & LSR_bit6TEMT & LSR_bit5THRE & "0" & LSR_bit3 & LSR_bit2PE & LSR_bit1 & LSR_bit0,
       data_o      => LSR_out,
 			serial_o_r  => open,
 			serial_o_l  => open
@@ -271,24 +295,50 @@ begin
 	  LSR_bit2PE    => LSR_bit2PE,
 	  leds          => ledsReceiverFSM,
 		RBR_lido      => rbrFoiLido,
-		RBR_load      => rbrLoad
+		RBR_load      => rbrLoad,
+		stateIsfinish => stateIsfinish,
+		stateIsStopBit => stateIsStopBit,
+		receivedAllStopBits => receivedAllStopBits,
+		stateIsErroStopBit => stateIsErroStopBit
 	);
 
 	ascii2seg_inst: ascii2seg
 	 port map(
 		off => '0',
 		--asc => RSR_data(7 downto 1),
-		asc => RSR_data8Bits(6 downto 0),
+		asc => RBR_data(7 downto 1),
 		seg => sig_display7seg,
 		dot => open
 	);
 
 	display7seg <= sig_display7seg;
 
+	------------------------- EXP 7
+
+	LSR_bit0 <= '1' when stateIsfinish = '1' else
+				'0' when rbrRead = '1' else
+				LSR_out(0);
+	
+	LSR_bit1 <= '1' when stateIsfinish = '1' and LSR_out(0) = '1' else
+				'0' when resetLSR_bit1_3 = '1' else
+				LSR_out(1);
+
+	LSR_bit3 <= '1' when stateIsErroStopBit = '1' else
+				'0'  when resetLSR_bit1_3 = '1' else
+				LSR_out(3);
+
+	LSR_load <= "11";
+	--LSR_load <= "11" when stateIsfinish = '1' or rbrRead = '1' or resetLSR_bit1_3 = '1' else
+	--			"00";
+
 	------------------------------------------ DEBUG
 
 	--leds <= ledsTransmitterFSM;
 	--leds <= ledsReceiverFSM;
 	leds <= "00" & LSR_out;
+	--leds <= RBR_data;
+
+	scope1 <= serialIn;
+	scope2 <= stateIsStopBit;
 
 end architecture;

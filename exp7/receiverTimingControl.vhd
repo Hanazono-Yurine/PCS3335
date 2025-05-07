@@ -8,6 +8,14 @@ entity receiverTimingControl is
 		receivedStartBit: in std_logic := '0';
 		LCR_out: in std_logic_vector(7 downto 0); 
 
+		LSR0_out: out std_logic;
+		LSR1_out: out std_logic;
+		LSR3_out: out std_logic;
+
+		LSR0_in: out std_logic;
+		LSR1_in: out std_logic;
+		LSR3_in: out std_logic;
+
 		valueReceiverBitCounter : in std_logic_vector(3 downto 0); -- valor do contador de bits recebidos
 		valueClockCounter : in std_logic_vector(3 downto 0);  -- valor do contador de clock de cada Data Bit (quantos clocks o S_idle fica nele mesmo)
 		valueStopBitCounter : in std_logic_vector(4 downto 0); -- valor do contador de clock de cada Stop Bit (quantos clocks o SstopBit fica nele mesmo)
@@ -24,8 +32,17 @@ entity receiverTimingControl is
 
 		-- === RBR ===
 		rbrFoiLido : in std_logic;
-		rbrLoad : out std_logic
+		rbrLoad : out std_logic;
 		-- ===========
+
+		stateIsStopBit : out std_logic;
+		stateIsfinish : out std_logic;
+		stateIsErroStopBit : out std_logic;
+
+		serialIn : in std_logic;
+
+		receivedAllStopBits_out : out std_logic
+
 	);
 end entity;
 
@@ -43,8 +60,10 @@ architecture rtl of receiverTimingControl is
 
 	signal numberOfClocksForStopBit: std_logic_vector(4 downto 0) := "00000";
 
+	signal LSR0_out_sig : std_logic := '0';
+
 	-- ============================================= FSM STATES =============================================
-    type state_type is (Sreset, Sstart, S_idle, SnextBit, SstopBit, Sready);
+    type state_type is (Sreset, Sstart, S_idle, SnextBit, SstopBit, Sfinish, S_erroStopBit, Sready);
     signal state, next_state: state_type := Sready;
 
 begin
@@ -71,8 +90,11 @@ begin
 		SnextBit when (state = S_idle   and valueClockCounterIs14 = '1' and receivedAllBits = '0') else
 		S_idle   when (state = SnextBit)                                                              else  
 		SstopBit when (state = S_idle   and valueClockCounterIs14 = '1' and receivedAllBits = '1') else
-		SstopBit when (state = SstopBit and receivedAllStopBits = '0')                             else
-		Sready   when (state = SstopBit and receivedAllStopBits = '1')                             else
+		SstopBit when (state = SstopBit and receivedAllStopBits = '0' and serialIn = '1' )                             else
+		Sfinish  when (state = SstopBit and receivedAllStopBits = '1' and serialIn = '1'  )   else
+		S_erroStopBit  when (state = SstopBit and serialIn = '0' ) else
+		Sfinish  when (state = S_erroStopBit)   else
+		Sready   when (state = Sfinish) else
 		state;
 
 	
@@ -80,9 +102,6 @@ begin
 	RSR_L_or_S <= "00" when state = S_idle else
                 "01" when state = SnextBit else
                 "00";
-
-	-- Faz load do RSR para o RBR quando estiver no Sready
-	rbrLoad <= '1' when state = Sready else '0';
 
 	leds(0) <= '1' when state = Sready else '0';
 	leds(1) <= '1' when state = Sstart else '0';
@@ -132,14 +151,31 @@ begin
 
 	receivedAllStopBits <= '1' when valueStopBitCounter = numberOfClocksForStopBit else '0'; -- ativa o sinal valueClockCounterIs14 quando o contador tiver valor 14
 
-	enStopBitCounter <= '0' when valueStopBitCounter = numberOfClocksForStopBit else '1'; -- trava o contador em 14 
+	enStopBitCounter <= '0' when valueStopBitCounter = numberOfClocksForStopBit or state = Sfinish else '1'; -- trava o contador
 
-	resetStopBitCounter <= '0' when state = SstopBit else '1';
+	resetStopBitCounter <= '0' when state = SstopBit or state = Sfinish or state = Sready else '1';
 
 	numberOfClocksForStopBit <= 
 	std_logic_vector(to_unsigned(15,5)) when LCR_out(2) = '0' else -- 1 bit stop
 	std_logic_vector(to_unsigned(23,5)) when LCR_out(2) & LCR_out(1 downto 0)  = "100" else -- 1,5 bits stop 
 	std_logic_vector(to_unsigned(31,5)); -- 2 bits stop
+
+	stateIsfinish <= '1' when state = Sfinish else '0';
+
+	------- EXP 7
+
+	-- Faz load do RSR para o RBR quando estiver no Sready
+	rbrLoad <= '1' when state = Sfinish else '0';
+
+	stateIsStopBit <= '1' when state = SstopBit else '0';
+
+	stateIsErroStopBit  <= '1' when state = S_erroStopBit else '0';
+
+	--LSR_Bit3 <= '1' when state = Sfinish and receivedAllBits = '0' else elemesmo(3);
+
+		receivedAllStopBits_out <= receivedAllStopBits;
+
+	
 
 
 end architecture;
