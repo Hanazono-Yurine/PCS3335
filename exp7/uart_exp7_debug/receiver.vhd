@@ -20,7 +20,9 @@ entity receiver is
 
 		LSR_out : in std_logic_vector(7 downto 0); 
 		LSR_bit0, LSR_bit1, LSR_bit3: out std_logic := '0';
-		resetLSR_bits1_3 : in std_logic := '0'
+		resetLSR_bits1_3 : in std_logic := '0';
+
+		toContando : out std_logic
 	);
 end entity;
 
@@ -76,9 +78,13 @@ architecture rtl of receiver is
 
 			stateIsfinish : out std_logic;
 			stateIsStopBit : out std_logic;
-			stateIsErroStopBit : out std_logic;
 			stateIsReady : out std_logic;
 
+			LSR_bit3 : out std_logic;
+			LSR_out : in std_logic_vector(7 downto 0);
+			resetLSR_bits1_3 : in std_logic;
+
+			toContandoOut : out std_logic;
 			serialIn : in std_logic
 		);
 	end component;
@@ -226,9 +232,12 @@ begin
 		rbrLoad                 => RBR_load,
 		stateIsfinish           => stateIsfinish,
 		stateIsStopBit => stateIsStopBit,
+		stateIsReady => stateIsReady,
+		LSR_bit3 => LSR_bit3,
+		LSR_out => LSR_out,
 		serialIn => serialIn,
-		stateIsErroStopBit => stateIsErroStopBit,
-		stateIsReady => stateIsReady
+		resetLSR_bits1_3 => resetLSR_bits1_3,
+		toContandoOut => toContando
 	);
 
 	-- ============================================= LOGIC =============================================
@@ -292,9 +301,9 @@ begin
 				'0' when resetLSR_bits1_3 = '1' else
 				LSR_out(1);
 
-	LSR_bit3 <= '1' when stateIsErroStopBit = '1' else
-				'0'  when resetLSR_bits1_3 = '1' else
-				LSR_out(3);
+	--LSR_bit3 <= '1' when stateIsErroStopBit = '1' else
+	--			'0'  when resetLSR_bits1_3 = '1' else
+	--			LSR_out(3);
 
     
 

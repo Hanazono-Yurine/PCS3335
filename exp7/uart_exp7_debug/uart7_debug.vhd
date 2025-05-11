@@ -16,8 +16,8 @@ entity uart7_debug is
 		switches: in std_logic_vector(9 downto 0);
 		leds: out std_logic_vector(9 downto 0);
 
-		resetLSR_bits1_3 : in std_logic := '0'
-		--scope1, scope2 : out std_logic := '0'
+		resetLSR_bits1_3 : in std_logic := '0';
+		scope1, scope2 : out std_logic := '0'
 	);
 end entity;
 
@@ -90,7 +90,8 @@ architecture rtl of uart7_debug is
 	
 			LSR_out : in std_logic_vector(7 downto 0); 
 			LSR_bit0, LSR_bit1, LSR_bit3 : out std_logic := '0';
-			resetLSR_bits1_3 : in std_logic := '0'
+			resetLSR_bits1_3 : in std_logic := '0';
+			toContando : out std_logic
 		);
 	end component;
 
@@ -151,7 +152,7 @@ architecture rtl of uart7_debug is
 
 	signal receivedAllStopBits : std_logic;
 
-	signal counter	: unsigned( 15 downto 0 ) := (others => '0');
+	signal toContando : std_logic := '0';
 
 begin
 
@@ -276,7 +277,8 @@ begin
 		LSR_bit0 => LSR_bit0,
 		LSR_bit1 => LSR_bit1,
 		LSR_bit3 => LSR_bit3,
-		resetLSR_bits1_3 => resetLSR_bits1_3
+		resetLSR_bits1_3 => resetLSR_bits1_3,
+		toContando => toContando
 	);
 
 
@@ -303,7 +305,7 @@ begin
 	leds <= "00" & LSR_out;
 	--leds <= RBR_data;
 
-	--scope1 <= serialIn;
-	--scope2 <= stateIsStopBit;
+	scope1 <= serialIn;
+	scope2 <= toContando;
 
 end architecture;
