@@ -1,0 +1,218 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{graphicx} % Required for inserting images
+\graphicspath{{images/}{images-desafios/}}
+\usepackage[a4paper, total={7.5in, 10in}]{geometry}
+\usepackage{float} % pra conseguir usar o \begin{figure}[H]
+\usepackage{indentfirst} % pra fazer tab n 1 paragrafos dos capitulos
+% package pra tabela
+\usepackage{multirow}
+\usepackage{array}
+
+%pacote pra codigo
+\usepackage{listings} 
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{myCodeStyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{cyan},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	%numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=myCodeStyle}
+\renewcommand{\lstlistingname}{Código}%Muda o termo "Listing":  Listing -> Código
+\renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Códigos
+
+
+\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+
+\def\tamanhoGrafico{0.8}
+
+\newcommand{\ohm}{\unit{\Omega} }
+\newcommand{\kohm}{\unit{k\Omega}}
+
+\title{
+	Laboratório Digital A - PCS3335
+	\\ Planejamento da Experiência 8
+}
+
+\author{
+	Alunos:
+	\\ Rafael Hipólito Rodrigues - N.USP: 14604308
+	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
+	\\ \\
+	Turma 3 - Bancada A6
+	\\ Professor: Bruno de Carvalho Albertini
+}
+
+%\date{}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section*{Planejamento} 
+	
+	Finalização da UART simplificada. Elaboração da entidade UART de acordo com o datasheet do PC16550D.
+	Essa entidada possou todas as entidades de transmissão e recepção desenvolvidas nas experiências anteriores.
+	
+	\section*{Diagramas}
+	
+	\subsection*{FSM}
+	
+	Diagrama da Maquina de Estados Finitos do \texttt{Transmitter} gerado no Quartus : 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/FSM_transmitter.png}
+		\caption{FSM do Transmitter.}
+		\label{fig:FSM_transmitter}
+	\end{figure}
+	
+	Diagrama da Maquina de Estados Finitos do \texttt{Receiver} gerado no Quartus : 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/FSM_receiver.png}
+		\caption{FSM do Receiver.}
+		\label{fig:FSM_receiver}
+	\end{figure}
+	
+	
+	
+	\subsection*{RTL}
+	
+	Diagramas RTL da entidades gerado no Quartus:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/RTL_topLevel.png}
+		\caption{Diagrama RTL do top level.}
+		\label{fig:RTL_topLevel}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/RTL_uart.png}
+		\caption{Diagrama RTL do \texttt{UART}.}
+		\label{fig:RTL_uart}
+	\end{figure}
+
+	
+	Os contadores e registradores utilizados foram os mesmos da experiência 2.
+	
+	\section*{Pinagem}
+
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{|l|l|l|l|}
+				\hline
+				serialIn              & PIN\_N16  & Input  & GPIO 0           \\ \hline
+				serialOut             & PIN\_B16  & Output & GPIO 1           \\ \hline
+				A{[}0{]}              & PIN\_M16  & Input  & GPIO 2           \\ \hline
+				A{[}1{]}              & PIN\_D17  & Input  & GPIO 3           \\ \hline
+				A{[}2{]}              & PIN\_K21  & Input  & GPIO 4           \\ \hline
+				notADS                & PIN\_M20  & Input  & GPIO 5           \\ \hline
+				notBAUDOUT            & PIN\_N21  & Output & GPIO 6           \\ \hline
+				notRXRDY              & PIN\_R21  & Output & GPIO 7           \\ \hline
+				notTXRDY              & PIN\_N20  & Output & GPIO 8           \\ \hline
+				RD                    & PIN\_M22  & Input  & GPIO 9           \\ \hline
+				reset                 & PIN\_L22  & Input  & GPIO 10          \\ \hline
+				WR                    & PIN\_P16  & Input  & GPIO 11          \\ \hline
+				clock50M              & PIN\_M9   & Input  & FPGA clock 50MHz \\ \hline
+				leds{[}0{]}           & PIN\_AA2  & Output & leds{[}0{]}      \\ \hline
+				leds{[}1{]}           & PIN\_AA1  & Output & leds{[}1{]}      \\ \hline
+				leds{[}2{]}           & PIN\_W2   & Output & leds{[}2{]}      \\ \hline
+				leds{[}3{]}           & PIN\_Y3   & Output & leds{[}3{]}      \\ \hline
+				leds{[}4{]}           & PIN\_N2   & Output & leds{[}4{]}      \\ \hline
+				leds{[}5{]}           & PIN\_N1   & Output & leds{[}5{]}      \\ \hline
+				leds{[}6{]}           & PIN\_U2   & Output & leds{[}6{]}      \\ \hline
+				leds{[}7{]}           & PIN\_U1   & Output & leds{[}7{]}      \\ \hline
+				leds{[}8{]}           & PIN\_L2   & Output & leds{[}8{]}      \\ \hline
+				leds{[}9{]}           & PIN\_L1   & Output & leds{[}9{]}      \\ \hline
+				display7segRBR{[}0{]} & PIN\_AA20 & Output & Display 7 seg 2  \\ \hline
+				display7segRBR{[}1{]} & PIN\_AB20 & Output & Display 7 seg 2  \\ \hline
+				display7segRBR{[}2{]} & PIN\_AA19 & Output & Display 7 seg 2  \\ \hline
+				display7segRBR{[}3{]} & PIN\_AA18 & Output & Display 7 seg 2  \\ \hline
+				display7segRBR{[}4{]} & PIN\_AB18 & Output & Display 7 seg 2  \\ \hline
+				display7segRBR{[}5{]} & PIN\_AA17 & Output & Display 7 seg 2  \\ \hline
+				display7segRBR{[}6{]} & PIN\_U22  & Output & Display 7 seg 2  \\ \hline
+				display7segTHR{[}0{]} & PIN\_U21  & Output & Display 7 seg 1  \\ \hline
+				display7segTHR{[}1{]} & PIN\_V21  & Output & Display 7 seg 1  \\ \hline
+				display7segTHR{[}2{]} & PIN\_W22  & Output & Display 7 seg 1  \\ \hline
+				display7segTHR{[}3{]} & PIN\_W21  & Output & Display 7 seg 1  \\ \hline
+				display7segTHR{[}4{]} & PIN\_Y22  & Output & Display 7 seg 1  \\ \hline
+				display7segTHR{[}5{]} & PIN\_Y21  & Output & Display 7 seg 1  \\ \hline
+				display7segTHR{[}6{]} & PIN\_AA22 & Output & Display 7 seg 1  \\ \hline
+				switches{[}0{]}       & PIN\_U13  & Input  & switches{[}0{]}  \\ \hline
+				switches{[}1{]}       & PIN\_V13  & Input  & switches{[}1{]}  \\ \hline
+				switches{[}2{]}       & PIN\_T13  & Input  & switches{[}2{]}  \\ \hline
+				switches{[}3{]}       & PIN\_T12  & Input  & switches{[}3{]}  \\ \hline
+				switches{[}4{]}       & PIN\_AA15 & Input  & switches{[}4{]}  \\ \hline
+				switches{[}5{]}       & PIN\_AB15 & Input  & switches{[}5{]}  \\ \hline
+				switches{[}6{]}       & PIN\_AA14 & Input  & switches{[}6{]}  \\ \hline
+				switches{[}7{]}       & PIN\_AA13 & Input  & switches{[}7{]}  \\ \hline
+				switches{[}8{]}       & PIN\_AB13 & Input  & switches{[}8{]}  \\ \hline
+				switches{[}9{]}       & PIN\_AB12 & Input  & switches{[}9{]}  \\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+	
+	
+	
+	\section*{Testes}
+	
+	\subsection*{Resultados dos testes}
+
+	\begin{itemize}
+		\item Funcionamento correto do receiver.
+		\par Resultado:
+		
+		\item Funcionamento correto do transmitter.
+		\par Resultado:
+		
+		\item Verificar funcionamento das portas da entidade UART:
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{|l|l|}
+					\hline
+					Porta      & Resultado \\ \hline
+					A          &           \\ \hline
+					notADS     &           \\ \hline
+					notBAUDOUT &           \\ \hline
+					Din        &           \\ \hline
+					Dout       &           \\ \hline
+					MR         &           \\ \hline
+					RD         &           \\ \hline
+					notRXRDY   &           \\ \hline
+					SIN        &           \\ \hline
+					SOUT       &           \\ \hline
+					notTXRDY   &           \\ \hline
+					WR         &           \\ \hline
+					XIN        &           \\ \hline
+					RCLK       &           \\ \hline
+				\end{tabular}
+			\end{center}
+		\end{table}
+		
+		
+	\end{itemize}
+	
+	
+\end{document}
