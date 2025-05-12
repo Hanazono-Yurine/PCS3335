@@ -2,42 +2,66 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity uart7_debug is
+entity uart is
 	port (
-		clock50M, reset: in std_logic := '0';
-		serialOut: out std_logic;
+		A: in std_logic_vector(2 downto 0); -- seletor de registrador
+		-- A = "000" and LCR_bit7 = '0' -> Dout <= RBR e Din => THR
+		-- A = "011" -> Din => LCR
+		-- A = "101" -> Dout <= LSR
+		-- A = "000" and LCR_bit7 = '1' -> latchDivisor_LS <= Din   Divisor Latch (least significant byte)
+		-- A = "001" and LCR_bit7 = '1' -> latchDivisor_MS <= Din   Divisor Latch (most significant byte)
 
-		-- exp 6
-		serialIn: in std_logic;
-		display7seg : out std_logic_vector(6 downto 0);
+		notADS : in std_logic := '0'; -- address strobe
+		-- notADS = '0' -> atualiza os valores de A (os seletores sao amostrados) 
+		-- notADS = '1' -> mantem os valores de A (os seletores NAO sao amostrados) 
 
-		RBR_read : in std_logic := '0';
-		--debug
-		switches: in std_logic_vector(9 downto 0);
-		leds: out std_logic_vector(9 downto 0);
+		notBAUDOUT : out std_logic := '0'; -- notBAUDOUT <= baudRateGenerator
 
-		resetLSR_bits1_3 : in std_logic := '0';
-		scope1, scope2 : out std_logic := '0'
+		Din: in std_logic_vector(7 downto 0); -- dados input
+		-- somente utiliza os dados de Din pra escrever em um registrador quando WR = '1'
+		Dout: out std_logic_vector(7 downto 0); -- dados OUTPUT
+
+		MR : in std_logic := '0'; -- master reset
+
+		RD : in std_logic := '0'; -- read
+		-- RD = '1' and A = "000" -> RBR_read <=  '1'
+		-- RD = '1' and A = "101" -> resetLSR_bits1_3 <=  '1'
+
+		notRXRDY : out std_logic := '0'; -- notRXRDY <= not LSR_bit0
+
+		SIN : in std_logic := '1'; -- serialIn <= SIN
+		SOUT : out std_logic := '1'; -- SOUT <= serialOut
+
+		notTXRDY : out std_logic := '0';  -- notRXRDY <= not LSR_bit6
+
+		WR  : in std_logic := '0'; -- write
+
+		XIN: in std_logic := '0'; -- XIN <= clock do IP-PLL (1.8432 MHz)
+		RCLK : in std_logic := '0'; -- RCLK deve recever por fora da UART o valor de notBAUDOUT
+
+		RBR_onlyDataBitsOut, THR_data: out std_logic_vector(7 downto 0)
+		
+
+		--clock50M, reset: in std_logic := '0';
+		--serialOut: out std_logic;
+		--serialIn: in std_logic;
+		--display7seg : out std_logic_vector(6 downto 0);
+		--RBR_read : in std_logic := '0';
+		--switches: in std_logic_vector(9 downto 0);
+		--leds: out std_logic_vector(9 downto 0);
+		--resetLSR_bits1_3 : in std_logic := '0';
 	);
 end entity;
 
-architecture rtl of uart7_debug is
+architecture rtl of uart is
 
 	-- ========================================= COMPONENTS ================================	
-	component ip_pll_50MHz is
-		port (
-			refclk   : in  std_logic := '0'; --  refclk.clk
-			rst      : in  std_logic := '0'; --   reset.reset
-			outclk_0 : out std_logic;        -- outclk0.clk
-			locked   : out std_logic         --  locked.export
-		);
-	end component;
 
 	component baudRateGenerator is
 		port(
-			clock       : in  std_logic;
-			reset       : in  std_logic;
-			divisor       : in  std_logic_vector(15 downto 0);
+			clock : in  std_logic;
+			reset : in  std_logic;
+			divisor : in  std_logic_vector(15 downto 0);
 			baudOut_n : out std_logic
 		);
 	end component baudRateGenerator;
@@ -67,6 +91,7 @@ architecture rtl of uart7_debug is
 			LSR_bit5THRE, LSR_bit6TEMT : out std_logic := '1';
     
             serialOut: out std_logic;
+			THR_dataOut : out std_logic_vector(7 downto 0);
             --debug
             leds: out std_logic_vector(9 downto 0)
         );
@@ -143,7 +168,7 @@ architecture rtl of uart7_debug is
 	-- EXP 7
 
 	signal RBR_data: std_logic_vector(9 downto 0);
-	signal RBR_onlyDataBits: std_logic_vector(7 downto 0);
+	--signal RBR_onlyDataBits: std_logic_vector(7 downto 0);
 
 	--signal stateIsfinish, stateIsStopBit, stateIsErroStopBit : std_logic := '0';
 	signal LSR_bit0, LSR_bit1, LSR_bit3  : std_logic := '0';
@@ -154,17 +179,32 @@ architecture rtl of uart7_debug is
 
 	signal toContando : std_logic := '0';
 
+	-- EXP8
+
+	signal THR_in : std_logic_vector(7 downto 0);
+	signal THR_load : std_logic := '0';
+	signal THR_dataOut : std_logic_vector(7 downto 0);
+	signal RBR_onlyDataBits : std_logic_vector(7 downto 0);
+
+	signal reset: std_logic := '0';
+	signal serialOut: std_logic;
+	signal serialIn: std_logic;
+	signal RBR_read : std_logic := '0';
+	signal leds:  std_logic_vector(9 downto 0);
+	signal resetLSR_bits1_3 : std_logic := '0';
+
 begin
 
 	-- ============================================= INSTANCES =============================================
-	--ip_pll
-    ip_pll: ip_pll_50MHz
-    port map (
-        refclk   => clock50M,
-        rst      => '0',
-        outclk_0 => clock1_8MHz,
-		locked => open
-    );
+
+	baudrategenerator_inst: baudRateGenerator
+	port map (
+	  clock     => clock1_8MHz,
+	  reset     => '0',
+	  --divisor   => std_logic_vector(to_unsigned(12,16)),
+	  divisor   => LD_MS_out & LD_LS_out,
+	  baudOut_n => clock
+	);
 
 	-- ************************************* REGISTERS
 
@@ -173,7 +213,7 @@ begin
 	  WIDTH => 8
 	)
 	port map (
-	  clock       => clock1_8MHz,
+	  clock       => clock,
 	  reset       => reset,
 	  serial_i    => '0',
 	  loadOrShift => "11",
@@ -188,7 +228,7 @@ begin
 	  WIDTH => 8
 	)
 	port map (
-	  clock       => clock1_8MHz,
+	  clock       => clock,
 	  reset       => reset,
 	  serial_i    => '0',
 	  loadOrShift => "11",
@@ -196,15 +236,6 @@ begin
 	  data_o      => LD_LS_out,
 	  serial_o_r  => open,
 	  serial_o_l  => open
-	);
-
-	baudrategenerator_inst: baudRateGenerator
-	port map (
-	  clock     => clock1_8MHz,
-	  reset     => '0',
-	  --divisor   => std_logic_vector(to_unsigned(12,16)),
-	  divisor   => LD_MS_out & LD_LS_out,
-	  baudOut_n => clock
 	);
 
 	LCR: shiftregister ------------------------------ LCR - Line Control Register
@@ -239,30 +270,21 @@ begin
     );
 
 
-	transmitter_inst: transmitter
+	transmitter_inst: transmitter ---------------------------- transmitter
 	port map (
-	  clock        => clock,
-	  reset        => reset,
-	  load         => load,
-	  LCR_out      => LCR_out,
-	  THR_in       => switches(7 downto 0),
-	  LSR_bit5THRE => LSR_bit5THRE,
-	  LSR_bit6TEMT => LSR_bit6TEMT,
-	  serialOut    => serialOut,
-	  leds         => ledsTransmitterFSM
+		clock        => clock,
+		reset        => reset,
+		load         => THR_load,
+		LCR_out      => LCR_out,
+		THR_in       => THR_in,
+		LSR_bit5THRE => LSR_bit5THRE,
+		LSR_bit6TEMT => LSR_bit6TEMT,
+		serialOut    => serialOut,
+		THR_dataOut => THR_dataOut,
+		leds         => ledsTransmitterFSM
 	);
-	
-	LCR_load <= "11" when load_DataInLCR = '1' else "00" ;
 
-	LCR_in <= switches(7 downto 0);
-
-	load_DataInLCR <= switches(8);
-	load <= switches(9);
-
-
-  -- ======================================================= EXP 6 ============================================================
-
-	receiver_inst: receiver
+	receiver_inst: receiver ---------------------------------- receiver
 	port map (
 		clock         => clock,
 		reset         => reset,
@@ -281,31 +303,54 @@ begin
 		toContando => toContando
 	);
 
-
-
-	ascii2seg_inst: ascii2seg
-	port map(
-		off => '0',
-		--asc => RSR_data(7 downto 1),
-		asc => RBR_onlyDataBits(6 downto 0), -- colocar RBR_onlyDataBits
-		seg => sig_display7seg,
-		dot => open
-	);
-
-	display7seg <= sig_display7seg;
-
 	LSR_load <= "11";
-	--LSR_load <= "11" when stateIsfinish = '1' or rbrRead = '1' or resetLSR_bit1_3 = '1' else
-	--			"00";
+
+
+	-- EXP8
+
+	Dout <= 
+		RBR_onlyDataBits when A = "000" and LCR_out(7) = '0' else 
+		LSR_out when A = "101" else 
+		"00000000";
+	
+	THR_in <= Din;
+	THR_load <= '1' when A = "000" and WR = '1' else '0';	
+			
+	LCR_in <= Din;
+	LCR_load <= "11" when A = "011" and WR = '1' else "00";
+
+	-- por enquanto vou pular a escrita nos Lacth reg
+
+	-- vou pular o notADS
+
+	notBAUDOUT <= clock;
+
+	reset <= MR;
+
+	RBR_read <=  '1' when RD = '1' and A = "000" else '0';
+	resetLSR_bits1_3 <= '1' when RD = '1' and A = "101" else '0';
+
+	notRXRDY <= not LSR_out(0);
+
+	SOUT <= serialOut;
+ 	serialIn <= SIN;
+
+	notTXRDY <= not LSR_out(6);
+		
+	clock1_8MHz <= XIN;
+	
+	RBR_onlyDataBitsOut <= RBR_onlyDataBits;
+	
+	THR_data <= THR_dataOut;
+
+	
 
 	------------------------------------------ DEBUG
 
 	--leds <= ledsTransmitterFSM;
 	--leds <= ledsReceiverFSM;
-	leds <= "00" & LSR_out;
+	--leds <= "00" & LSR_out;
 	--leds <= RBR_data;
 
-	scope1 <= serialIn;
-	scope2 <= toContando;
 
 end architecture;

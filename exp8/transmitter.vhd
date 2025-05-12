@@ -14,6 +14,8 @@ entity transmitter is
 		LSR_bit5THRE, LSR_bit6TEMT : out std_logic := '1';
 
         serialOut: out std_logic;
+        
+        THR_dataOut : out std_logic_vector(7 downto 0);
 		--debug
         leds: out std_logic_vector(9 downto 0)
 	);
@@ -232,6 +234,8 @@ begin
 
 
 	THR_load <= "11" when load = '1' else "00";
+
+    THR_dataOut <=  THR_out;
 
 	------------------------------------------ DEBUG
 
