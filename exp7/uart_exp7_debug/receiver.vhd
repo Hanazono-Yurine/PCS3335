@@ -285,6 +285,8 @@ begin
 
 	RBR_data <= RBR_out;
 
+	RBR_in <= RSR_out;
+
 	RBR_onlyDataBits <= 
 		"000" & RBR_out(5 downto 1) when LCR_out(1 downto 0) = "00" else  
 		"00"  & RBR_out(6 downto 1) when LCR_out(1 downto 0) = "01" else
