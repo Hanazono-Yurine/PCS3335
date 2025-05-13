@@ -193,6 +193,13 @@ architecture rtl of uart is
 	signal leds:  std_logic_vector(9 downto 0);
 	signal resetLSR_bits1_3 : std_logic := '0';
 
+	signal A_RegOut : std_logic_vector(2 downto 0);
+	signal A_RegLoad : std_logic_vector(2 downto 0);
+
+	signal latchDivisor_MS_Load : std_logic_vector(2 downto 0) := "11";
+	signal latchDivisor_LS_Load : std_logic_vector(2 downto 0) := "11";
+	
+
 begin
 
 	-- ============================================= INSTANCES =============================================
@@ -216,7 +223,7 @@ begin
 	  clock       => clock,
 	  reset       => reset,
 	  serial_i    => '0',
-	  loadOrShift => "11",
+	  loadOrShift => latchDivisor_MS_Load,
 	  data_i      => clockDivisorValue(15 downto 8),
 	  data_o      => LD_MS_out,
 	  serial_o_r  => open,
@@ -231,7 +238,7 @@ begin
 	  clock       => clock,
 	  reset       => reset,
 	  serial_i    => '0',
-	  loadOrShift => "11",
+	  loadOrShift => latchDivisor_LS_Load,
 	  data_i      => clockDivisorValue(7 downto 0),
 	  data_o      => LD_LS_out,
 	  serial_o_r  => open,
@@ -309,26 +316,48 @@ begin
 	-- EXP8
 
 	Dout <= 
-		RBR_onlyDataBits when A = "000" and LCR_out(7) = '0' else 
-		LSR_out when A = "101" else 
+		RBR_onlyDataBits when A_RegOut = "000" and LCR_out(7) = '0' else 
+		LSR_out when A_RegOut = "101" else 
 		"00000000";
 	
 	THR_in <= Din;
-	THR_load <= '1' when A = "000" and WR = '1' else '0';	
+	THR_load <= '1' when A_RegOut = "000" and WR = '1' else '0';	
 			
 	LCR_in <= Din;
-	LCR_load <= "11" when A = "011" and WR = '1' else "00";
+	LCR_load <= "11" when A_RegOut = "011" and WR = '1' else "00";
 
-	-- por enquanto vou pular a escrita nos Lacth reg
+	-- por enquanto deixa fixo em 16
+	--clockDivisorValue(7 downto 0) <= Din; -- Divisor Latch (least significant byte)
+	--latchDivisor_LS_Load <= "11" when A_RegOut = "000" and LCR_out(7) = '1' and WR = '1' else "00";
 
-	-- vou pular o notADS
+	--clockDivisorValue(15 downto 8) <= Din; --  Divisor Latch (most significant byte)
+	--latchDivisor_MS_Load <= "11" when A_RegOut = "001" and LCR_out(7) = '1' and WR = '1' else "00";
+
+	latchDivisor_LS_Load <= "11";
+	latchDivisor_MS_Load <= "11";
+
+	portA_reg: shiftregister
+    generic map (
+      WIDTH => 3
+    )
+    port map (
+		clock       => clock,
+		reset       => '0',
+		serial_i    => '1',
+		loadOrShift => A_RegLoad,
+		data_i      => A,
+		data_o      => A_RegOut,
+		serial_o_r  => open,
+		serial_o_l  => open
+    );
+	A_RegLoad <= "11" when notADS = '0' else "00";
 
 	notBAUDOUT <= clock;
 
 	reset <= MR;
 
-	RBR_read <=  '1' when RD = '1' and A = "000" else '0';
-	resetLSR_bits1_3 <= '1' when RD = '1' and A = "101" else '0';
+	RBR_read <=  '1' when RD = '1' and A_RegOut = "000" else '0';
+	resetLSR_bits1_3 <= '1' when RD = '1' and A_RegOut = "101" else '0';
 
 	notRXRDY <= not LSR_out(0);
 
