@@ -194,10 +194,10 @@ architecture rtl of uart is
 	signal resetLSR_bits1_3 : std_logic := '0';
 
 	signal A_RegOut : std_logic_vector(2 downto 0);
-	signal A_RegLoad : std_logic_vector(2 downto 0);
+	signal A_RegLoad : std_logic_vector(1 downto 0) := "00";
 
-	signal latchDivisor_MS_Load : std_logic_vector(2 downto 0) := "11";
-	signal latchDivisor_LS_Load : std_logic_vector(2 downto 0) := "11";
+	signal latchDivisor_MS_Load : std_logic_vector(1 downto 0) := "11";
+	signal latchDivisor_LS_Load : std_logic_vector(1 downto 0) := "11";
 	
 
 begin
