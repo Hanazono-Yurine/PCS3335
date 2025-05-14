@@ -1,0 +1,190 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{graphicx} % Required for inserting images
+\graphicspath{{images/}{images-desafios/}}
+\usepackage[a4paper, total={7.5in, 10in}]{geometry}
+\usepackage{float} % pra conseguir usar o \begin{figure}[H]
+\usepackage{indentfirst} % pra fazer tab n 1 paragrafos dos capitulos
+% package pra tabela
+\usepackage{multirow}
+\usepackage{array}
+
+%pacote pra codigo
+\usepackage{listings} 
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{myCodeStyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{cyan},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	%numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=myCodeStyle}
+\renewcommand{\lstlistingname}{Código}%Muda o termo "Listing":  Listing -> Código
+\renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Códigos
+
+
+\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+
+\def\tamanhoGrafico{0.8}
+
+\newcommand{\ohm}{\unit{\Omega} }
+\newcommand{\kohm}{\unit{k\Omega}}
+
+\title{
+	Laboratório Digital A - PCS3335
+	\\ Relatório da Experiência 7
+}
+
+\author{
+	Alunos:
+	\\ Rafael Hipólito Rodrigues - N.USP: 14604308
+	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
+	\\ \\
+	Turma 3 - Bancada A6
+	\\ Professor: Bruno de Carvalho Albertini
+}
+
+%\date{}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section*{Planejamento} 
+	Adição do Entidade \texttt{Receiver Buffer Register} ao circuito da UART simplificada.
+	Foi mantido as entidades da experiência 6 e 5.
+	
+	\section*{Diagramas}
+	
+	\subsection*{FSM}
+	
+	Diagrama da Maquina de Estados Finitos do Receiver gerado no Quartus : 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/FSM.png}
+		\caption{FSM do Receiver.}
+		\label{fig:FSM_exp4}
+	\end{figure}
+	
+	
+	
+	\subsection*{RTL}
+	
+	Diagramas RTL da entidades gerado no Quartus:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/RTL_uart.png}
+		\caption{Diagrama RTL da UART.}
+		\label{fig:RTL1}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/RTL_receiver.png}
+		\caption{Diagrama RTL do \texttt{Receiver}.}
+		\label{fig:RTL_TCC}
+	\end{figure}
+
+	
+	Os contadores e registradores utilizados foram os mesmos da experiência 2.
+	
+	\section*{Pinagem}
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{|l|l|l|}
+				\hline
+				clock50M           & PIN\_M9   & Input  \\ \hline
+				display7seg{[}0{]} & PIN\_U21  & Output \\ \hline
+				display7seg{[}1{]} & PIN\_V21  & Output \\ \hline
+				display7seg{[}2{]} & PIN\_W22  & Output \\ \hline
+				display7seg{[}3{]} & PIN\_W21  & Output \\ \hline
+				display7seg{[}4{]} & PIN\_Y22  & Output \\ \hline
+				display7seg{[}5{]} & PIN\_Y21  & Output \\ \hline
+				display7seg{[}6{]} & PIN\_AA22 & Output \\ \hline
+				leds{[}0{]}        & PIN\_AA2  & Output \\ \hline
+				leds{[}1{]}        & PIN\_AA1  & Output \\ \hline
+				leds{[}2{]}        & PIN\_W2   & Output \\ \hline
+				leds{[}3{]}        & PIN\_Y3   & Output \\ \hline
+				leds{[}4{]}        & PIN\_N2   & Output \\ \hline
+				leds{[}5{]}        & PIN\_N1   & Output \\ \hline
+				leds{[}6{]}        & PIN\_U2   & Output \\ \hline
+				leds{[}7{]}        & PIN\_U1   & Output \\ \hline
+				leds{[}8{]}        & PIN\_L2   & Output \\ \hline
+				leds{[}9{]}        & PIN\_L1   & Output \\ \hline
+				rbrRead            & PIN\_C16  & Input  \\ \hline
+				reset              & PIN\_B16  & Input  \\ \hline
+				resetLSR\_bit1\_3  & PIN\_D17  & Input  \\ \hline
+				scope1             & PIN\_H16  & Output \\ \hline
+				scope2             & PIN\_H15  & Output \\ \hline
+				serialIn           & PIN\_M16  & Input  \\ \hline
+				serialOut          & PIN\_N16  & Output \\ \hline
+				switches{[}0{]}    & PIN\_U13  & Input  \\ \hline
+				switches{[}1{]}    & PIN\_V13  & Input  \\ \hline
+				switches{[}2{]}    & PIN\_T13  & Input  \\ \hline
+				switches{[}3{]}    & PIN\_T12  & Input  \\ \hline
+				switches{[}4{]}    & PIN\_AA15 & Input  \\ \hline
+				switches{[}5{]}    & PIN\_AB15 & Input  \\ \hline
+				switches{[}6{]}    & PIN\_AA14 & Input  \\ \hline
+				switches{[}7{]}    & PIN\_AA13 & Input  \\ \hline
+				switches{[}8{]}    & PIN\_AB13 & Input  \\ \hline
+				switches{[}9{]}    & PIN\_AB12 & Input  \\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+	
+	
+	
+	\section*{Testes}
+	
+	\subsection*{Resultados dos testes}
+
+	\begin{itemize}
+		\item bits adequadamente recebidos em 9600bps.
+		\par Resultado: SUCESSO
+		
+		\item Ao ativar e desativa o reset, volta ao estado inicial. 
+		\par Resultado:  SUCESSO
+		
+		\item Funcionamento correto do RBR.
+		\par Resultado:  SUCESSO
+		
+		\item Funcionamento dos bits LSR:
+		
+		\subitem Bit 0: Data Ready (DR) - Resultado:  SUCESSO
+		
+		\subitem Bit 1: Overrun Error (OE) - Resultado:  SUCESSO
+		
+		\subitem Bit 2: Parity Error (PE) - Resultado:  SUCESSO
+		
+		\subitem Bit 3: Framming Error (FE) - Resultado: FALHA
+		
+		\item Valor recebido adequadamente exibido no display de 7 segmentos.
+		\par Resultado:  SUCESSO
+		
+	\end{itemize}
+	
+	\subsection*{Comentários}
+		Apenas o bit 3 do LSR não apresentou funcionamento correto. O grupo irá repensar a lógica de
+		calculo desse bit.
+	
+	
+\end{document}
