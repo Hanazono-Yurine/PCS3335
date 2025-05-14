@@ -99,7 +99,8 @@ begin
 		SnextBit when (state = S_idle   and valueClockCounterIs14 = '1' and receivedAllBits = '0') else
 		S_idle   when (state = SnextBit)                                                              else  
 		SstopBit when (state = S_idle   and valueClockCounterIs14 = '1' and receivedAllBits = '1') else
-		Sfinish  when (state = SstopBit)   else
+		SstopBit when (state = SstopBit and receivedAllStopBits = '0')                             else
+		Sfinish  when (state = SstopBit and receivedAllStopBits = '1')   else
 		Sready   when (state = Sfinish) else
 		state;
 
@@ -155,44 +156,25 @@ begin
 
 	-- logica de controle do contador stop_Bit_Counter: counter number of clocks for the stop bit
 
-	stopBitCounterIsCountingRegister: shiftregister
-    generic map (
-      WIDTH => 1
-    )
-    port map (
-		clock       => clock,
-		reset       => '0',
-		serial_i    => '1',
-		loadOrShift => "11",
-		data_i      => toContando_vector,
-		data_o      => toContando_out,
-		serial_o_r  => open,
-		serial_o_l  => open
-    );
+	receivedAllStopBits <= '1' when valueStopBitCounter = numberOfClocksForStopBit else '0'; -- ativa o sinal valueClockCounterIs14 quando o contador tiver valor 14
 
-	toContando_vector <= "1" when toContando = '1' else "0"; 
+	enStopBitCounter <= '0' when valueStopBitCounter = numberOfClocksForStopBit else '1'; -- trava o contador em 14 
 
-	toContando <= '1' when state = SstopBit and toContando = '0' and LSR_out(3) = '0' else
-					'0' when LSR_out(3) = '1' or receivedAllStopBits = '1' else
-					toContando_out(0);
+	resetStopBitCounter <= '0' when state = SstopBit else '1';
 
-	LSR_bit3 <= '1' when toContando = '1' and serialIn = '0' else
+	numberOfClocksForStopBit <= 
+		std_logic_vector(to_unsigned(15 - 2, 5)) when LCR_out(2) = '0' else -- 1 bit stop
+		std_logic_vector(to_unsigned(23 - 2, 5)) when LCR_out(2) & LCR_out(1 downto 0)  = "100" else -- 1,5 bits stop 
+		std_logic_vector(to_unsigned(31 - 2, 5)); -- 2 bits stop
+			-- complicado . . . colocar -1
+
+	toContandoOut <= '1' when state = SstopBit else '0';
+
+	LSR_bit3 <= '1' when state = SstopBit and serialIn = '0' else
 				'0' when resetLSR_bits1_3 = '1' else
 				LSR_out(3);
 
-	receivedAllStopBits <= '1' when valueStopBitCounter = numberOfClocksForStopBit else '0';
-
-	--enStopBitCounter <= '0' when valueStopBitCounter = numberOfClocksForStopBit else '1'; -- trava o contador
-
-	resetStopBitCounter <= '0' when toContando = '1' else '1'; -- 
-
-	numberOfClocksForStopBit <= 
-		std_logic_vector(to_unsigned(15 - 1, 5)) when LCR_out(2) = '0' else -- 1 bit stop
-		std_logic_vector(to_unsigned(23 - 1, 5)) when LCR_out(2) & LCR_out(1 downto 0)  = "100" else -- 1,5 bits stop 
-		std_logic_vector(to_unsigned(31 - 1, 5)); -- 2 bits stop
-			-- complicado . . . colocar -1
-	
-	toContandoOut <= toContando;
+	--toContandoOut <= '1' when state = SstopBit else '0';
 
 	------- EXP 7
 
