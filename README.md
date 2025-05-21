@@ -14,4 +14,9 @@ no final tivessemos uma UART completa
 
 ## Projeto Final
 
+Foi decidido fazer um calculadora com [notação polonesa inversa](https://en.wikipedia.org/wiki/Reverse_Polish_notation),
+que lerá os digitos pressionados em um teclado de matrix 4x4.
+
+Os cálculos seram feitos usando [BCD](https://en.wikipedia.org/wiki/Binary-coded_decimal) para a facilidação do mesmo.
+
 *WIP*
