@@ -17,7 +17,7 @@ entity shiftregister is
 end shiftregister;
 
 architecture arch_reg of shiftregister is
-	signal data_temp : std_logic_vector( WIDTH-1 downto 0 ) := (0=> '1', others => '0');
+	signal data_temp : std_logic_vector( WIDTH-1 downto 0 ) := (0=> '0', others => '1');
 	
 	--signal data_temp_reg : std_logic_vector( WIDTH-1 downto 0 ) := (others => '0');
 begin

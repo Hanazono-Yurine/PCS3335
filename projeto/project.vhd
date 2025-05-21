@@ -85,6 +85,7 @@ begin
 		locked => open
     );
 
+	--Low clock just for debugging
 	baudrategenerator_inst: baudRateGenerator
 	port map (
 	  clock     => clock1_8MHz,
@@ -113,24 +114,23 @@ begin
 
 	c <= reg_c;
 
-	ascii_input <=  "0110111" when reg_c(0) = '1' and l = "0001" else -- 7
-					"0111000" when reg_c(1) = '1' and l = "0001" else -- 8
-					"0111001" when reg_c(2) = '1' and l = "0001" else -- 9
-					"1000001" when reg_c(3) = '1' and l = "0001" else -- A
-					"0110100" when reg_c(0) = '1' and l = "0010" else -- 4
-					"0110101" when reg_c(1) = '1' and l = "0010" else -- 5
-					"0110110" when reg_c(2) = '1' and l = "0010" else -- 6
-					"1000010" when reg_c(3) = '1' and l = "0010" else -- B
-					--"0110001" when reg_c(0) = '1' and l(2) = '1' else -- 1
-					--"0110010" when reg_c(1) = '1' and l(2) = '1' else -- 2
-					--"1001111" when reg_c(2) = '1' and l(2) = '1' else -- 3
-					--"1000100" when reg_c(3) = '1' and l(2) = '1' else -- D
-					--"1000011" when reg_c(0) = '1' and l(3) = '1' else -- C
-					--"0110000" when reg_c(1) = '1' and l(3) = '1' else -- 0
-					--"1000101" when reg_c(2) = '1' and l(3) = '1' else -- E
-					--"1001000" when reg_c(3) = '1' and l(3) = '1' else -- H
-					"1111111" when l = "1111" else
-					"1111111"	;
+	ascii_input <=  "0110111" when reg_c(0) = '0' and l(0) = '0' else -- 7
+			            "0111000" when reg_c(1) = '0' and l(0) = '0' else -- 8
+			            "0111001" when reg_c(2) = '0' and l(0) = '0' else -- 9
+			            "1000001" when reg_c(3) = '0' and l(0) = '0' else -- A
+			            "0110100" when reg_c(0) = '0' and l(1) = '0' else -- 4
+			            "0110101" when reg_c(1) = '0' and l(1) = '0' else -- 5
+			            "0110110" when reg_c(2) = '0' and l(1) = '0' else -- 6
+			            "1000010" when reg_c(3) = '0' and l(1) = '0' else -- B
+			            "0110001" when reg_c(0) = '0' and l(2) = '0' else -- 1
+			            "0110010" when reg_c(1) = '0' and l(2) = '0' else -- 2
+			            "1001111" when reg_c(2) = '0' and l(2) = '0' else -- 3
+			            "1000100" when reg_c(3) = '0' and l(2) = '0' else -- D
+			            "1000011" when reg_c(0) = '0' and l(3) = '0' else -- C
+			            "0110000" when reg_c(1) = '0' and l(3) = '0' else -- 0
+			            "1000101" when reg_c(2) = '0' and l(3) = '0' else -- E
+			            "1001000" when reg_c(3) = '0' and l(3) = '0' else -- H
+			            "1111111"	;
 
 	ascii2seg_inst: ascii2seg
 	port map(
