@@ -477,32 +477,32 @@ begin
 	ascii_input1 <= display7seg1Mode1 when state = Smode1 else
 					display7seg1Mode2 when state = Smode2 else
 					display7seg1Mode3 when state = Smode3 else
-					(others => '0') ;
+					"1010011" ; -- S
 
 	ascii_input2 <= display7seg2Mode1 when state = Smode1 else
 					display7seg2Mode2 when state = Smode2 else
 					display7seg2Mode3 when state = Smode3 else
-					(others => '0') ;
+					"1000101" ; -- E
 					
 	ascii_input3 <= display7seg3Mode1 when state = Smode1 else
 					display7seg3Mode2 when state = Smode2 else
 					display7seg3Mode3 when state = Smode3 else
-					(others => '0') ;
+					"1001100" ; -- L
 
 	ascii_input4 <= display7seg4Mode1 when state = Smode1 else
 					display7seg4Mode2 when state = Smode2 else
 					display7seg4Mode3 when state = Smode3 else
-					(others => '0') ;
+					"1000101" ; -- E
 
 	ascii_input5 <= display7seg5Mode1 when state = Smode1 else
 					display7seg5Mode2 when state = Smode2 else
 					display7seg5Mode3 when state = Smode3 else
-					(others => '0') ;
+					"1000011" ; -- C
 
 	ascii_input6 <= display7seg6Mode1 when state = Smode1 else
 					display7seg6Mode2 when state = Smode2 else
 					display7seg6Mode3 when state = Smode3 else
-					(others => '0') ;
+					"1010100" ; -- T
 	
 
 end architecture;
