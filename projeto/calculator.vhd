@@ -480,7 +480,11 @@ begin
 
 	asciiMode3 <= ascii when state = Smode3 else "1111111";
 	
-
+	-- leds
+	leds(0) <= '1' when state = S_menu else '0';
+	leds(1) <= '1' when state = Smode1 else '0';
+	leds(2) <= '1' when state = Smode2 else '0';
+	leds(3) <= '1' when state = Smode3 else '0';
 
 	-- displays 7 seg
 	ascii_input1 <= display7seg1Mode1 when state = Smode1 else
