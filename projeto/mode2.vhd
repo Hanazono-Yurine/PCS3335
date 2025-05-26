@@ -10,9 +10,6 @@ entity mode2 is
 	port (
 		clock, reset : in std_logic := '0';
 
-        mode2Selected : in std_logic := '0'; -- pra saber se esse modo tem que ta funcionando (ta selecionado)
-        mode2Exit : out std_logic := '0'; -- pra entidade calculator saber quando tem que sair desse modo
-
 		ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
         ledsmode2 : out std_logic_vector (7 downto 0);
@@ -22,9 +19,10 @@ entity mode2 is
         memPosMode2 : out integer := 0;
         wrMode2 : out std_logic := '0';
 
-        stackSizeOut : in std_logic_vector (3 downto 0); -- saida do valor do registrador stackSize; registrador stackSize armazena a quantidade numeros na memoria
-        stackSizeInMode2 : out std_logic_vector (3 downto 0);
-        stackSizeLoadMode2 : out std_logic := '0'; -- faz o load do valor de stackSizeInMode1 no registrador
+        -- contador stackSizeCounter conta quando numeros foram armazenados na memoria(pilha)
+        stackSizeCounterValue : in std_logic_vector (3 downto 0); -- saida do valor do contador stackSize
+        stackSizeCounterClockMode2 : out std_logic := '0'; -- controla o clock do stackSizeCounter quando esse modo eh o ativo
+        stackSizeCounterUpMode2 : out std_logic := '1'; -- controla o sentido do stackSizeCounter('1' -> aumenta; '0' -> diminui)r
 		
         --valores ASCII de cada display
 		display7seg1mode2 : out std_logic_vector (6 downto 0);

@@ -11,9 +11,6 @@ entity mode1 is
 	port (
 		clock, reset : in std_logic := '0';
 
-        mode1Selected : in std_logic := '0'; -- pra saber se esse modo tem que ta funcionando (ta selecionado)
-        mode1Exit : out std_logic := '0'; -- pra entidade calculator saber quando tem que sair desse modo
-
 		ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
         ledsMode1 : out std_logic_vector (7 downto 0);
@@ -23,9 +20,10 @@ entity mode1 is
         memPosMode1 : out integer := 0;
         wrMode1 : out std_logic := '0';
 
-        stackSizeOut : in std_logic_vector (3 downto 0); -- saida do valor do registrador stackSize; registrador stackSize armazena a quantidade numeros na memoria
-        stackSizeInMode1 : out std_logic_vector (3 downto 0);
-        stackSizeLoadMode1 : out std_logic := '0'; -- faz o load do valor de stackSizeInMode1 no registrador
+        -- contador stackSizeCounter conta quando numeros foram armazenados na memoria(pilha)
+        stackSizeCounterValue : in std_logic_vector (3 downto 0); -- saida do valor do contador stackSize
+        stackSizeCounterClockMode1 : out std_logic := '0'; -- controla o clock do stackSizeCounter quando esse modo eh o ativo
+        stackSizeCounterUpMode1 : out std_logic := '1'; -- controla o sentido do stackSizeCounter('1' -> aumenta; '0' -> diminui)
 		
         --valores ASCII de cada display
 		display7seg1Mode1 : out std_logic_vector (6 downto 0);
@@ -71,12 +69,18 @@ architecture rtl of mode1 is
 
     signal valueFreezeCounter, wantedValueFreezeCounter : std_logic_vector (4 downto 0);
 
-
     signal keyNumberPressed : std_logic := '0';
 
+    -- dataTempCounter
+    signal dataTempCounterClock, dataTempCounterUp : std_logic := '0';
+	signal dataTempCounterValue : std_logic_vector(2 downto 0) := (others => '0') ; 
+
+    -- dataTemp reg
+    signal dataTempIn, dataTempOut : std_logic_vector (20 downto 0);
+
     -- ============================================= FSM STATES =============================================
-    type state_type is (S_stopped, S_freeze1, S_exitmode1, S_ready, S_storeTemp, S_deleteTemp, S_storeMemory, S_freeze2);
-    signal state, next_state: state_type := S_stopped;
+    type state_type is (S_ready, S_storeTemp, S_deleteTemp, S_storeMemory, S_freeze2);
+    signal state, next_state: state_type := S_ready;
 
 	
 begin
@@ -88,17 +92,13 @@ begin
 	fsm: process(clock, reset)
 	begin
 		if reset = '1' then
-			state <= S_stopped;
+			state <= S_ready;
 		elsif rising_edge(clock) then
 			state <= next_state;
 		end if;
 	end process;
     
 	next_state <=
-		S_stopped   when (state = S_stopped and mode1Selected = '0') else
-		S_freeze1   when (state = S_stopped and mode1Selected = '1') else
-		S_freeze1   when (state = S_freeze1 and AchievedWantedValueFreezeCounter = '0' ) else 
-		S_ready   when (state = S_freeze1 and AchievedWantedValueFreezeCounter = '1') else 
 		S_ready   when (state = S_ready and ascii = "1111111") else -- ta apertando nada
 		S_storeTemp   when (state = S_ready and keyNumberPressed = '1')   else	-- apertou algum digito
 		S_deleteTemp  when (state = S_ready and ascii = "1000011")   else -- apertou C
@@ -108,8 +108,6 @@ begin
         S_freeze2   when (state = S_storeMemory) else
 		S_freeze2   when (state = S_freeze2 and AchievedWantedValueFreezeCounter = '0' ) else 
 		S_ready     when (state = S_freeze2 and AchievedWantedValueFreezeCounter = '1') else
-        S_exitmode1 when (state = S_ready and ascii = "1001000") else -- apertou OP4 (H em ascii)
-        S_stopped   when (state = S_exitmode1) else
 		state;
 
     -- ============================================= LOGIC =============================================
@@ -132,7 +130,7 @@ begin
 
     enFreezeCounter <= '0' when valueFreezeCounter = wantedValueFreezeCounter else '1'; -- trava o contador quando chega no valor maximo
 
-    resetFreezeCounter <= '0' when state = S_freeze1 or state = S_freeze2 else '1'; --faz comecar a contar no estados freeze
+    resetFreezeCounter <= '0' when state = S_freeze2 else '1'; --faz comecar a contar no estados freeze
 
     AchievedWantedValueFreezeCounter <= '1' when valueFreezeCounter = wantedValueFreezeCounter else '0';
 
@@ -148,37 +146,35 @@ begin
                                 ascii = "0111000" or 
                                 ascii = "0111001" else '0';
 
-    
-    mode1Exit <= '1' when state = S_exitmode1 else '0';
 
 
-	data_temp: shiftregister 
+	data_temp: shiftregister -- armazena temporariamente os digitos antes de colocar na memoria
     generic map (
       WIDTH => 21
     )
     port map (
       clock       => clock,
-      reset       => '0',
-      serial_i    => '1',
+      reset       => reset,
+      serial_i    => '0',
       loadOrShift => "11",
-      data_i      => RBR_in,
-      data_o      => RBR_out,
+      data_i      => dataTempIn,
+      data_o      => dataTempOut,
       serial_o_r  => open,
       serial_o_l  => open
     );   
     
-    numeberOfTempNumbers_counter: counter 
+    data_temp_size: counter -- conta quantos digitos estao armazenados no reg reg data_temp
     generic map (
         WIDTH => 3
     )
     port map (
-        clock  => ,
-        reset  => ,
-        enable => ,
+        clock  => dataTempCounterClock,
+        reset  => reset,
+        enable => '1',
         load   => '0',
-        up     => '1',
+        up     => dataTempCounterUp,
         data_i => (others => '0'),
-        data_o => 
+        data_o => dataTempCounterValue
     );
 
 

@@ -10,6 +10,8 @@ entity calculator is
         l : in std_logic_vector(3 downto 0);
 
         leds : out std_logic_vector (7 downto 0);
+
+		goToMenu : in std_logic := '0';
 		
 		display7seg1 : out std_logic_vector (6 downto 0);
         display7seg2 : out std_logic_vector (6 downto 0);
@@ -54,6 +56,17 @@ architecture rtl of calculator is
 		);
 	end component;
 
+	component counter is
+		generic (
+				WIDTH : natural := 8 -- Size in bits
+		);
+		port (
+				clock, reset, enable, load, up : in std_logic;
+				data_i : in std_logic_vector( WIDTH-1 downto 0 );
+				data_o : out std_logic_vector( WIDTH-1 downto 0 )
+		);
+	end component;
+
 	component ascii2seg is
 		port (
 			off : in std_logic;
@@ -91,9 +104,6 @@ architecture rtl of calculator is
 		port (
 			clock, reset : in std_logic := '0';
 
-			mode1Selected : in std_logic := '0'; -- pra saber se esse modo tem que ta funcionando (ta selecionado)
-			mode1Exit : out std_logic := '0'; -- pra entidade calculator saber quando tem que sair desse modo
-
 			ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
 			ledsMode1 : out std_logic_vector (7 downto 0);
@@ -103,10 +113,12 @@ architecture rtl of calculator is
 			memPosMode1 : out integer := 0;
 			wrMode1 : out std_logic := '0';
 
-			stackSizeOut : in std_logic_vector (3 downto 0); -- saida do valor do registrador stackSize
-			stackSizeInMode1 : out std_logic_vector (3 downto 0);
-	        stackSizeLoadMode1 : out std_logic := '0'; -- faz o load do valor de stackSizeInMode1 no registrador
+			-- contador stackSizeCounter conta quando numeros foram armazenados na memoria(pilha)
+			stackSizeCounterValue : in std_logic_vector (3 downto 0); -- saida do valor do contador stackSize
+			stackSizeCounterClockMode1 : out std_logic := '0'; -- controla o clock do stackSizeCounter quando esse modo eh o ativo
+			stackSizeCounterUpMode1 : out std_logic := '1'; -- controla o sentido do stackSizeCounter('1' -> aumenta; '0' -> diminui)
 			
+			--valores ASCII de cada display
 			display7seg1Mode1 : out std_logic_vector (6 downto 0);
 			display7seg2Mode1 : out std_logic_vector (6 downto 0);
 			display7seg3Mode1 : out std_logic_vector (6 downto 0);
@@ -121,9 +133,6 @@ architecture rtl of calculator is
 		port (
 			clock, reset : in std_logic := '0';
 
-			mode2Selected : in std_logic := '0'; -- pra saber se esse modo tem que ta funcionando (ta selecionado)
-			mode2Exit : out std_logic := '0'; -- pra entidade calculator saber quando tem que sair desse modo
-
 			ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
 			ledsmode2 : out std_logic_vector (7 downto 0);
@@ -131,12 +140,14 @@ architecture rtl of calculator is
 			memoryDataInMode2 : out std_logic_vector (20 downto 0); -- valor que vou escrever na memoria (4 bits pra cada digito) * 5 + 1 bit pro sinal
 			memoryDataOut : in std_logic_vector (20 downto 0); -- valor que to lendo da memoria
 			memPosMode2 : out integer := 0;
-        	wrMode2 : out std_logic := '0';
+			wrMode2 : out std_logic := '0';
 
-			stackSizeOut : in std_logic_vector (3 downto 0); -- saida do valor do registrador stackSize
-			stackSizeInMode2 : out std_logic_vector (3 downto 0);
-	        stackSizeLoadMode2 : out std_logic := '0'; -- faz o load do valor de stackSizeInMode1 no registrador
+			-- contador stackSizeCounter conta quando numeros foram armazenados na memoria(pilha)
+			stackSizeCounterValue : in std_logic_vector (3 downto 0); -- saida do valor do contador stackSize
+			stackSizeCounterClockMode2 : out std_logic := '0'; -- controla o clock do stackSizeCounter quando esse modo eh o ativo
+			stackSizeCounterUpMode2 : out std_logic := '1'; -- controla o sentido do stackSizeCounter('1' -> aumenta; '0' -> diminui)r
 			
+			--valores ASCII de cada display
 			display7seg1mode2 : out std_logic_vector (6 downto 0);
 			display7seg2mode2 : out std_logic_vector (6 downto 0);
 			display7seg3mode2 : out std_logic_vector (6 downto 0);
@@ -150,9 +161,6 @@ architecture rtl of calculator is
 		port (
 			clock, reset : in std_logic := '0';
 
-			mode3Selected : in std_logic := '0'; -- pra saber se esse modo tem que ta funcionando (ta selecionado)
-			mode3Exit : out std_logic := '0'; -- pra entidade calculator saber quando tem que sair desse modo
-
 			ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
 			ledsmode3 : out std_logic_vector (7 downto 0);
@@ -162,10 +170,12 @@ architecture rtl of calculator is
 			memPosMode3 : out integer := 0;
 			wrMode3 : out std_logic := '0';
 
-			stackSizeOut : in std_logic_vector (3 downto 0); -- saida do valor do registrador stackSize
-			stackSizeInMode3 : out std_logic_vector (3 downto 0);
-	        stackSizeLoadMode3 : out std_logic := '0'; -- faz o load do valor de stackSizeInMode1 no registrador
+			-- contador stackSizeCounter conta quando numeros foram armazenados na memoria(pilha)
+			stackSizeCounterValue : in std_logic_vector (3 downto 0); -- saida do valor do contador stackSize
+			stackSizeCounterClockMode3 : out std_logic := '0'; -- controla o clock do stackSizeCounter quando esse modo eh o ativo
+			stackSizeCounterUpMode3 : out std_logic := '1'; -- controla o sentido do stackSizeCounter('1' -> aumenta; '0' -> diminui)
 			
+			--valores ASCII de cada display
 			display7seg1mode3 : out std_logic_vector (6 downto 0);
 			display7seg2mode3 : out std_logic_vector (6 downto 0);
 			display7seg3mode3 : out std_logic_vector (6 downto 0);
@@ -187,7 +197,7 @@ architecture rtl of calculator is
 	--signal leds_debug : std_logic_vector(7 downto 0);
 
     -- keyboard 4x4
-    signal ascii : std_logic_vector(6 downto 0);
+    signal ascii, asciiMode1, asciiMode2, asciiMode3 : std_logic_vector(6 downto 0);
 	signal isPressed : std_logic := '0';
 
 	--memory
@@ -195,9 +205,9 @@ architecture rtl of calculator is
 	signal data_i, memoryDataOut : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal wr : std_logic := '0'; 
 
-	signal stackSizeIn, stackSizeOut : std_logic_vector(3 downto 0);
-	signal stackSizeLoad : std_logic := '0'; 
-	signal regStackSizeLoad : std_logic_vector(1 downto 0);
+	-- stackSizeCounter
+	signal stackSizeCounterClock, stackSizeCounterUp : std_logic := '0';
+	signal stackSizeCounterValue : std_logic_vector(3 downto 0) := (others => '0') ; 
 
 	--mode1
 	signal mode1Selected, mode1Exit : std_logic := '0';
@@ -205,8 +215,7 @@ architecture rtl of calculator is
 	signal memoryDataInMode1 : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal memPosMode1 : integer := 0;
 	signal wrMode1 : std_logic := '0'; 
-	signal stackSizeInMode1 : std_logic_vector(3 downto 0);
-	signal stackSizeLoadMode1 : std_logic := '0'; 
+	signal stackSizeCounterClockMode1, stackSizeCounterUpMode1 : std_logic := '0'; 
 	signal display7seg1Mode1, display7seg2Mode1, display7seg3Mode1, display7seg4Mode1, display7seg5Mode1, display7seg6Mode1 : std_logic_vector (6 downto 0);
 
 	--mode2
@@ -215,8 +224,7 @@ architecture rtl of calculator is
 	signal memoryDataInMode2 : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal memPosMode2 : integer := 0;
 	signal wrMode2 : std_logic := '0'; 
-	signal stackSizeInMode2 : std_logic_vector(3 downto 0);
-	signal stackSizeLoadMode2 : std_logic := '0'; 
+	signal stackSizeCounterClockMode2, stackSizeCounterUpMode2 : std_logic := '0'; 
 	signal display7seg1Mode2, display7seg2Mode2, display7seg3Mode2, display7seg4Mode2, display7seg5Mode2, display7seg6Mode2 : std_logic_vector (6 downto 0);
 
 	--mode3
@@ -225,8 +233,7 @@ architecture rtl of calculator is
 	signal memoryDataInMode3 : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal memPosMode3 : integer := 0;
 	signal wrMode3 : std_logic := '0'; 
-	signal stackSizeInMode3 : std_logic_vector(3 downto 0);
-	signal stackSizeLoadMode3 : std_logic := '0'; 
+	signal stackSizeCounterClockMode3, stackSizeCounterUpMode3 : std_logic := '0'; 
 	signal display7seg1Mode3, display7seg2Mode3, display7seg3Mode3, display7seg4Mode3, display7seg5Mode3, display7seg6Mode3 : std_logic_vector (6 downto 0);
 
 	-- displays 7 seg
@@ -234,8 +241,8 @@ architecture rtl of calculator is
 
 
 	-- ============================================= FSM STATES =============================================
-    type state_type is (S_idle, Smode1, Smode2, Smode3);
-    signal state, next_state: state_type := S_idle;
+    type state_type is (S_menu, Smode1, Smode2, Smode3);
+    signal state, next_state: state_type := S_menu;
 
 
 begin
@@ -272,19 +279,18 @@ begin
         isPressed => isPressed
     );
 
-	stackSize: shiftregister
+	stackSize: counter 
     generic map (
-      WIDTH => 4
+        WIDTH => 4
     )
     port map (
-      clock       => clock,
-      reset       => '0',
-      serial_i    => '0',
-      loadOrShift => regStackSizeLoad,
-      data_i      => stackSizeIn,
-      data_o      => stackSizeOut,
-      serial_o_r  => open,
-      serial_o_l  => open
+        clock  => stackSizeCounterClock,
+        reset  => reset,
+        enable => '1',
+        load   => '0',
+        up     => stackSizeCounterUp,
+        data_i => (others => '0'),
+        data_o => stackSizeCounterValue
     );
 
 	memory_inst: memory
@@ -300,21 +306,19 @@ begin
 		data_o => memoryDataOut
 	);
 
-	mode1_inst: mode1
+	mode1_inst: entity work.mode1
 	 port map(
 		clock => clock,
 		reset => reset,
-		mode1Selected => mode1Selected,
-		mode1Exit => mode1Exit,
 		ascii => ascii,
 		ledsMode1 => ledsMode1,
 		memoryDataInMode1 => memoryDataInMode1,
 		memoryDataOut => memoryDataOut,
 		memPosMode1 => memPosMode1,
 		wrMode1 => wrMode1,
-		stackSizeOut => stackSizeOut,
-		stackSizeInMode1 => stackSizeInMode1,
-		stackSizeLoadMode1 => stackSizeLoadMode1,
+		stackSizeCounterValue => stackSizeCounterValue,
+		stackSizeCounterClockMode1 => stackSizeCounterClockMode1,
+		stackSizeCounterUpMode1 => stackSizeCounterUpMode1,
 		display7seg1Mode1 => display7seg1Mode1,
 		display7seg2Mode1 => display7seg2Mode1,
 		display7seg3Mode1 => display7seg3Mode1,
@@ -323,21 +327,19 @@ begin
 		display7seg6Mode1 => display7seg6Mode1
 	);
 
-	mode2_inst: mode2
+	mode2_inst: entity work.mode2
 	 port map(
 		clock => clock,
 		reset => reset,
-		mode2Selected => mode2Selected,
-		mode2Exit => mode2Exit,
 		ascii => ascii,
 		ledsmode2 => ledsmode2,
 		memoryDataInMode2 => memoryDataInMode2,
 		memoryDataOut => memoryDataOut,
 		memPosMode2 => memPosMode2,
 		wrMode2 => wrMode2,
-		stackSizeOut => stackSizeOut,
-		stackSizeInMode2 => stackSizeInMode2,
-		stackSizeLoadMode2 => stackSizeLoadMode2,
+		stackSizeCounterValue => stackSizeCounterValue,
+		stackSizeCounterClockMode2 => stackSizeCounterClockMode2,
+		stackSizeCounterUpMode2 => stackSizeCounterUpMode2,
 		display7seg1mode2 => display7seg1mode2,
 		display7seg2mode2 => display7seg2mode2,
 		display7seg3mode2 => display7seg3mode2,
@@ -350,17 +352,15 @@ begin
 	 port map(
 		clock => clock,
 		reset => reset,
-		mode3Selected => mode3Selected,
-		mode3Exit => mode3Exit,
 		ascii => ascii,
 		ledsmode3 => ledsmode3,
 		memoryDataInMode3 => memoryDataInMode3,
 		memoryDataOut => memoryDataOut,
 		memPosMode3 => memPosMode3,
 		wrMode3 => wrMode3,
-		stackSizeOut => stackSizeOut,
-		stackSizeInMode3 => stackSizeInMode3,
-		stackSizeLoadMode3 => stackSizeLoadMode3,
+		stackSizeCounterValue => stackSizeCounterValue,
+		stackSizeCounterClockMode3 => stackSizeCounterClockMode3,
+		stackSizeCounterUpMode3 => stackSizeCounterUpMode3,
 		display7seg1mode3 => display7seg1mode3,
 		display7seg2mode3 => display7seg2mode3,
 		display7seg3mode3 => display7seg3mode3,
@@ -422,23 +422,23 @@ begin
 	fsm: process(clock, reset)
 	begin
 		if reset = '1' then
-			state <= S_idle;
+			state <= S_menu;
 		elsif rising_edge(clock) then
 			state <= next_state;
 		end if;
 	end process;
     
 	next_state <=
-		S_idle   when (state = S_idle and ascii = "1111111") else -- nada ta sendo apertado 
-		Smode1   when (state = S_idle and ascii = "0110001") else -- apertou botao 1
-		Smode2   when (state = S_idle and ascii = "0110010") else -- apertou botao 2
-		Smode3   when (state = S_idle and ascii = "1001111") else -- apertou botao 3
-		Smode1   when (state = Smode1 and mode1Exit = '0')   else
-		S_idle   when (state = Smode1 and mode1Exit = '1')   else	
-		Smode2   when (state = Smode2 and mode2Exit = '0')   else
-		S_idle   when (state = Smode2 and mode2Exit = '1')   else
-		Smode3   when (state = Smode3 and mode3Exit = '0')   else
-		S_idle   when (state = Smode3 and mode3Exit = '1')   else
+		S_menu   when (state = S_menu and ascii = "1111111") else -- nada ta sendo apertado 
+		Smode1   when (state = S_menu and ascii = "0110001") else -- apertou botao 1
+		Smode2   when (state = S_menu and ascii = "0110010") else -- apertou botao 2
+		Smode3   when (state = S_menu and ascii = "1001111") else -- apertou botao 3
+		Smode1   when (state = Smode1 and goToMenu = '0')   else
+		S_menu   when (state = Smode1 and goToMenu = '1')   else	
+		Smode2   when (state = Smode2 and goToMenu = '0')   else
+		S_menu   when (state = Smode2 and goToMenu = '1')   else
+		Smode3   when (state = Smode3 and goToMenu = '0')   else
+		S_menu   when (state = Smode3 and goToMenu = '1')   else
 		state;
 
 	-- ============================================= LOGIC =============================================
@@ -460,18 +460,27 @@ begin
 			memoryDataInMode3 when state = Smode3 else
 			(others => '0') ;
 
-	--reg stackSize
-	stackSizeLoad <= stackSizeLoadMode1 when state = Smode1 else
-					stackSizeLoadMode2 when state = Smode2 else
-					stackSizeLoadMode3 when state = Smode3 else
-					'0';
+	--stackSize Counter
+	stackSizeCounterClock <= stackSizeCounterClockMode1 when state  = Smode1 else
+							stackSizeCounterClockMode2 when state  = Smode2 else
+							stackSizeCounterClockMode3 when state  = Smode3 else
+							'0';
 
-	regStackSizeLoad <= "11" when stackSizeLoad = '1' else "00"; -- fiz isso pq declarei stackSizeLoadMode como tipo errado
+	stackSizeCounterUp <= stackSizeCounterUpMode1 when state  = Smode1 else
+							stackSizeCounterUpMode2 when state  = Smode2 else
+							stackSizeCounterUpMode3 when state  = Smode3 else
+							'0';
 
-	stackSizeIn <= stackSizeInMode1 when state = Smode1 else
-					stackSizeInMode2 when state = Smode2 else
-					stackSizeInMode3 when state = Smode3 else
-					(others => '0') ;
+
+	-- ascii do keyboard4x4
+
+	asciiMode1 <= ascii when state = Smode1 else "1111111";
+
+	asciiMode2 <= ascii when state = Smode2 else "1111111";
+
+	asciiMode3 <= ascii when state = Smode3 else "1111111";
+	
+
 
 	-- displays 7 seg
 	ascii_input1 <= display7seg1Mode1 when state = Smode1 else
