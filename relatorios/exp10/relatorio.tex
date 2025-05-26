@@ -1,0 +1,111 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{graphicx} % Required for inserting images
+\graphicspath{{images/}{images-desafios/}}
+\usepackage[a4paper, total={7.5in, 10in}]{geometry}
+\usepackage{float} % pra conseguir usar o \begin{figure}[H]
+\usepackage{indentfirst} % pra fazer tab n 1 paragrafos dos capitulos
+% package pra tabela
+\usepackage{multirow}
+\usepackage{array}
+
+%pacote pra codigo
+\usepackage{listings} 
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{myCodeStyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{cyan},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	%numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=myCodeStyle}
+\renewcommand{\lstlistingname}{Código}%Muda o termo "Listing":  Listing -> Código
+\renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Códigos
+
+
+\newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
+
+\def\tamanhoGrafico{0.8}
+
+\newcommand{\ohm}{\unit{\Omega} }
+\newcommand{\kohm}{\unit{k\Omega}}
+
+\title{
+	Laboratório Digital A - PCS3335
+	\\ Planejamento da Experiência 10
+}
+
+\author{
+	Alunos:
+	\\ Rafael Hipólito Rodrigues - N.USP: 14604308
+	\\ {{PERSON-2}} - N.USP: {{PERSON-ID-2}}
+	\\ \\
+	Turma 3 - Bancada A6
+	\\ Professor: Bruno de Carvalho Albertini
+}
+
+%\date{}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section*{Planejamento: Elaboração do Projeto} 
+	
+	Nessa experiência começamos a elaborar o projeto da disciplina seguindo o cronograma apresentado na proposta
+	de projeto. Desenvolvimento da entidade top level da calculadora e das sub-entidade para cada modo de funcionamento.
+	O teclado de membrana utilizado foi disponibilizado pelo Lab. Dig..
+	
+	\section*{Modos de funcionamento}
+	
+	A calculadora terá 3 modos de funcionamento:
+	
+	\subsection*{Modo 1: armazenamento de números na memoria como uma pilha}
+	No 1° modo o usuário apenas armazenaria números na memoria, como se estivesse adicionando valores ao topo de uma pilha.
+	
+	\subsection*{Modo 2: realização de operações aritméticas com os valores da pilha}
+	No 2° modo o usuário apenas realizaria operações aritméticas com os valores que já estiverem na armazenados na memoria. Ao selecionar 
+	uma operação aritméticas, a calculadora pegaria os 2 números mais ao topo da pilha, realizaria a operação entre eles, removeria esses 2 números da 
+	pilha, e armazenaria no topo da pilha o resultado da operação.
+	
+	\subsection*{Modo 3: exibição dos valores da pilha}
+	No 3° modo o usuário poderá ler os valores que ja estão armazenados na memoria.
+	
+	 \begin{figure}[H]
+	 	\centering
+	 	\includegraphics[width=1\linewidth]{images/RLT.png}
+	 	\caption{RLT da entidade top level.}
+	 	\label{fig:RLT}
+	 \end{figure}
+	 
+	 Objetivos:
+	 
+	 \begin{itemize}
+	 	\item Elaborar a entidade top level que contenha o acesso ao teclado de membrana, acesso à memoria, 
+	 	aos displays de 7 segmnetos e consiga alterar entre os modos de funcionamento.
+	 	
+	 	\item Elaborar o modo 1 de funcionamento.
+	 \end{itemize}
+	
+	\section*{Resultados}
+	
+	
+	
+	
+\end{document}
