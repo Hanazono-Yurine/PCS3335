@@ -310,7 +310,7 @@ begin
 	 port map(
 		clock => clock,
 		reset => reset,
-		ascii => ascii,
+		ascii => asciiMode1,
 		ledsMode1 => ledsMode1,
 		memoryDataInMode1 => memoryDataInMode1,
 		memoryDataOut => memoryDataOut,
@@ -331,7 +331,7 @@ begin
 	 port map(
 		clock => clock,
 		reset => reset,
-		ascii => ascii,
+		ascii => asciiMode2,
 		ledsmode2 => ledsmode2,
 		memoryDataInMode2 => memoryDataInMode2,
 		memoryDataOut => memoryDataOut,
@@ -352,7 +352,7 @@ begin
 	 port map(
 		clock => clock,
 		reset => reset,
-		ascii => ascii,
+		ascii => asciiMode3,
 		ledsmode3 => ledsmode3,
 		memoryDataInMode3 => memoryDataInMode3,
 		memoryDataOut => memoryDataOut,
