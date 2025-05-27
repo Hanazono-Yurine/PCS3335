@@ -53,6 +53,11 @@ architecture rtl of mode3 is
 	-- ============================================= SIGNAL =============================================
 
 	signal index : integer := 0;
+	signal memAscii1 : std_logic_vector(6 downto 0);
+	signal memAscii2 : std_logic_vector(6 downto 0);
+	signal memAscii3 : std_logic_vector(6 downto 0);
+	signal memAscii4 : std_logic_vector(6 downto 0);
+	signal memAscii5 : std_logic_vector(6 downto 0);
 	
 	-- ============================================= FSM STATES =============================================
 	type state_type is (S_idle, S_next, S_prev);
@@ -61,7 +66,43 @@ architecture rtl of mode3 is
 begin
 
 	-- ============================================= INSTANCES =============================================
-	
+
+	conv1: bcd_asciiConverter
+	port map(
+			ascii_i => open,
+			bcd_i => memoryDataOut(3 downto 0),
+			ascii_o => memAscii1,
+			bcd_o => open
+	);
+	conv2: bcd_asciiConverter
+	port map(
+			ascii_i => open,
+			bcd_i => memoryDataOut(7 downto 4),
+			ascii_o => memAscii2,
+			bcd_o => open
+	);
+	conv3: bcd_asciiConverter
+	port map(
+			ascii_i => open,
+			bcd_i => memoryDataOut(11 downto 8),
+			ascii_o => memAscii3,
+			bcd_o => open
+	);
+	conv4: bcd_asciiConverter
+	port map(
+			ascii_i => open,
+			bcd_i => memoryDataOut(15 downto 12),
+			ascii_o => memAscii4,
+			bcd_o => open
+	);
+	conv5: bcd_asciiConverter
+	port map(
+			ascii_i => open,
+			bcd_i => memoryDataOut(19 downto 16),
+			ascii_o => memAscii5,
+			bcd_o => open
+	);
+
 	-- ============================================= FSM PROCESS =============================================
 	-- process padrao de proximo estado da fsm
 	fsm: process(clock, reset)
@@ -91,11 +132,13 @@ begin
 		end if;
 	end process:
 
-	display7seg1mode3 <= memoryDataOut(3 downto 0);
-	display7seg2mode3 <= memoryDataOut(7 downto 4);
-	display7seg3mode3 <= memoryDataOut(11 downto 8);
-	display7seg4mode3 <= memoryDataOut(15 downto 12);
-	display7seg5mode3 <= memoryDataOut(19 downto 16);
+	memPosMode3 <= index;
+
+	display7seg1mode3 <= memAscii1;
+	display7seg2mode3 <= memAscii2;
+	display7seg3mode3 <= memAscii3;
+	display7seg4mode3 <= memAscii4;
+	display7seg5mode3 <= memAscii5;
 	display7seg6mode3 <= "1000000" when memoryDataOut(20) = '1' else
 											 "1111111";
 
