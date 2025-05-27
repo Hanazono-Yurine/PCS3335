@@ -48,6 +48,16 @@ architecture rtl of mode3 is
 		);
 	end component;
 
+	component bcd_asciiConverter is
+			port (
+					ascii_i : in std_logic_vector(6 downto 0); 
+					bcd_i : in std_logic_vector(3 downto 0); 
+
+					ascii_o : out std_logic_vector(6 downto 0); 
+					bcd_o : out std_logic_vector(3 downto 0) 
+			);
+	end component;
+
 	constant maxIndex : integer := 16;
 
 	-- ============================================= SIGNAL =============================================
@@ -69,35 +79,35 @@ begin
 
 	conv1: bcd_asciiConverter
 	port map(
-			ascii_i => open,
+			ascii_i => "0000000",
 			bcd_i => memoryDataOut(3 downto 0),
 			ascii_o => memAscii1,
 			bcd_o => open
 	);
 	conv2: bcd_asciiConverter
 	port map(
-			ascii_i => open,
+			ascii_i => "0000000",
 			bcd_i => memoryDataOut(7 downto 4),
 			ascii_o => memAscii2,
 			bcd_o => open
 	);
 	conv3: bcd_asciiConverter
 	port map(
-			ascii_i => open,
+			ascii_i => "0000000",
 			bcd_i => memoryDataOut(11 downto 8),
 			ascii_o => memAscii3,
 			bcd_o => open
 	);
 	conv4: bcd_asciiConverter
 	port map(
-			ascii_i => open,
+			ascii_i => "0000000",
 			bcd_i => memoryDataOut(15 downto 12),
 			ascii_o => memAscii4,
 			bcd_o => open
 	);
 	conv5: bcd_asciiConverter
 	port map(
-			ascii_i => open,
+			ascii_i => "0000000",
 			bcd_i => memoryDataOut(19 downto 16),
 			ascii_o => memAscii5,
 			bcd_o => open
@@ -120,17 +130,25 @@ begin
 		            state;
 
 	process(clock, state)
+		variable lock : std_logic := '0';
 	begin
-		if state = S_next then
+		if state = S_next and lock = '0' then
 			index <= index + 1;
-		elsif state = S_prev then
+			lock <= '1';
+		elsif state = S_prev and lock = '0' then
 			index <= index - 1;
+			lock <= '1';
+		elsif state = S_idle then
+			lock <= '0';
 		end if;
 
 		if index > (maxIndex - 1) then
 			index <= 0;
 		end if;
-	end process:
+		if index < 0 then
+			index <= maxIndex;
+		end if;
+	end process;
 
 	memPosMode3 <= index;
 
