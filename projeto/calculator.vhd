@@ -8,10 +8,14 @@ entity calculator is
 
 		c : out std_logic_vector(3 downto 0);
         l : in std_logic_vector(3 downto 0);
+		
+		up, down : in std_logic := '0';
 
-        leds : out std_logic_vector (7 downto 0);
+        leds : out std_logic_vector (9 downto 0);
 
 		goToMenu : in std_logic := '0';
+
+		pinDebug : out std_logic := '0';
 		
 		display7seg1 : out std_logic_vector (6 downto 0);
         display7seg2 : out std_logic_vector (6 downto 0);
@@ -106,7 +110,7 @@ architecture rtl of calculator is
 
 			ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
-			ledsMode1 : out std_logic_vector (7 downto 0);
+			ledsMode1 : out std_logic_vector (9 downto 0);
 
 			memoryDataInMode1 : out std_logic_vector (20 downto 0); -- valor que vou escrever na memoria (4 bits pra cada digito) * 5 + 1 bit pro sinal
 			memoryDataOut : in std_logic_vector (20 downto 0); -- valor que to lendo da memoria
@@ -135,7 +139,7 @@ architecture rtl of calculator is
 
 			ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
-			ledsmode2 : out std_logic_vector (7 downto 0);
+			ledsmode2 : out std_logic_vector (9 downto 0);
 
 			memoryDataInMode2 : out std_logic_vector (20 downto 0); -- valor que vou escrever na memoria (4 bits pra cada digito) * 5 + 1 bit pro sinal
 			memoryDataOut : in std_logic_vector (20 downto 0); -- valor que to lendo da memoria
@@ -163,7 +167,7 @@ architecture rtl of calculator is
 
 			ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
-			ledsmode3 : out std_logic_vector (7 downto 0);
+			ledsmode3 : out std_logic_vector (9 downto 0);
 
 			memoryDataInMode3 : out std_logic_vector (20 downto 0); -- valor que vou escrever na memoria (4 bits pra cada digito) * 5 + 1 bit pro sinal
 			memoryDataOut : in std_logic_vector (20 downto 0); -- valor que to lendo da memoria
@@ -192,12 +196,12 @@ architecture rtl of calculator is
 	signal clockDivisorValue: std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(CLOCK_DIVISOR_VALUE,16));
 
 	-- clocks
-	signal clock1_8MHz, clock: std_logic := '1';
+	signal clock1_8MHz, clock, clockKeyboard: std_logic := '1';
 
 	--signal leds_debug : std_logic_vector(7 downto 0);
 
     -- keyboard 4x4
-    signal ascii, asciiMode1, asciiMode2, asciiMode3 : std_logic_vector(6 downto 0);
+    signal ascii, asciiMode1, asciiMode2, asciiMode3, ascii_temp : std_logic_vector(6 downto 0);
 	signal isPressed : std_logic := '0';
 
 	--memory
@@ -211,7 +215,7 @@ architecture rtl of calculator is
 
 	--mode1
 	signal mode1Selected, mode1Exit : std_logic := '0';
-	signal ledsMode1 : std_logic_vector (7 downto 0);
+	signal ledsMode1 : std_logic_vector (9 downto 0);
 	signal memoryDataInMode1 : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal memPosMode1 : integer := 0;
 	signal wrMode1 : std_logic := '0'; 
@@ -220,7 +224,7 @@ architecture rtl of calculator is
 
 	--mode2
 	signal mode2Selected, mode2Exit : std_logic := '0';
-	signal ledsMode2 : std_logic_vector (7 downto 0);
+	signal ledsMode2 : std_logic_vector (9 downto 0);
 	signal memoryDataInMode2 : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal memPosMode2 : integer := 0;
 	signal wrMode2 : std_logic := '0'; 
@@ -229,7 +233,7 @@ architecture rtl of calculator is
 
 	--mode3
 	signal mode3Selected, mode3Exit : std_logic := '0';
-	signal ledsMode3 : std_logic_vector (7 downto 0);
+	signal ledsMode3 : std_logic_vector (9 downto 0);
 	signal memoryDataInMode3 : std_logic_vector(20 downto 0) := (others => '0') ;
 	signal memPosMode3 : integer := 0;
 	signal wrMode3 : std_logic := '0'; 
@@ -267,11 +271,20 @@ begin
         baudOut_n => clock
 	);
 
-	--clock <= clock1_8MHz;
+	baudrategenerator_inst1: baudRateGenerator
+	port map (
+        clock     => clock,
+        reset     => '0',
+        divisor   => std_logic_vector(to_unsigned(8,16)),
+        --divisor   => (others => '1'),
+        baudOut_n => clockKeyboard
+	);
+
+	--clock <= clockKeyboard;
 
     keyboard4x4_inst: keyboard4x4
     port map(
-        clock => clock,
+        clock => clockKeyboard,
         reset => reset,
         c => c,
         l => l,
@@ -352,6 +365,8 @@ begin
 	 port map(
 		clock => clock,
 		reset => reset,
+		up => up,
+		down => down,
 		ascii => asciiMode3,
 		ledsmode3 => ledsmode3,
 		memoryDataInMode3 => memoryDataInMode3,
@@ -412,7 +427,8 @@ begin
     ascii2seg_inst6: ascii2seg
 	port map(
 		off => '0',
-		asc => ascii_input6, 
+		--asc => ascii_input6, 
+		asc => ascii,
 		seg => display7seg6,
 		dot => open
 	);
@@ -429,10 +445,10 @@ begin
 	end process;
     
 	next_state <=
-		S_menu   when (state = S_menu and ascii = "1111111") else -- nada ta sendo apertado 
-		Smode1   when (state = S_menu and ascii = "0110001") else -- apertou botao 1
-		Smode2   when (state = S_menu and ascii = "0110010") else -- apertou botao 2
-		Smode3   when (state = S_menu and ascii = "1001111") else -- apertou botao 3
+		S_menu   when (state = S_menu and ascii_temp = "1111111") else -- nada ta sendo apertado 
+		Smode1   when (state = S_menu and ascii_temp = "0110001") else -- apertou botao 1 
+		Smode2   when (state = S_menu and ascii_temp = "0110010") else -- apertou botao 2
+		Smode3   when (state = S_menu and ascii_temp = "0110011") else -- apertou botao 3
 		Smode1   when (state = Smode1 and goToMenu = '0')   else
 		S_menu   when (state = Smode1 and goToMenu = '1')   else	
 		Smode2   when (state = Smode2 and goToMenu = '0')   else
@@ -442,7 +458,10 @@ begin
 		state;
 
 	-- ============================================= LOGIC =============================================
+	
+	ascii_temp <= ascii when state = S_menu else "1111111";
 
+	--pressed1 <= '1' when ascii = "0110001" else '0';
 
 	--memoria
 	wr <= wrMode1 when state = Smode1 else
@@ -485,37 +504,44 @@ begin
 	leds(1) <= '1' when state = Smode1 else '0';
 	leds(2) <= '1' when state = Smode2 else '0';
 	leds(3) <= '1' when state = Smode3 else '0';
+	leds(9 downto 4) <= ledsMode1(9 downto 4) when state = Smode1 else
+						ledsMode2(9 downto 4) when state = Smode2 else
+						ledsMode3(9 downto 4) when state = Smode3 else
+						"000000";
 
 	-- displays 7 seg
 	ascii_input1 <= display7seg1Mode1 when state = Smode1 else
 					display7seg1Mode2 when state = Smode2 else
 					display7seg1Mode3 when state = Smode3 else
-					"1010011" ; -- S
+					"1010100" ; -- S 1010100
 
 	ascii_input2 <= display7seg2Mode1 when state = Smode1 else
 					display7seg2Mode2 when state = Smode2 else
 					display7seg2Mode3 when state = Smode3 else
-					"1000101" ; -- E
+					"1000011" ; -- E 1000011
 					
 	ascii_input3 <= display7seg3Mode1 when state = Smode1 else
 					display7seg3Mode2 when state = Smode2 else
 					display7seg3Mode3 when state = Smode3 else
-					"1001100" ; -- L
+					"1000101" ; -- L 1000101
 
 	ascii_input4 <= display7seg4Mode1 when state = Smode1 else
 					display7seg4Mode2 when state = Smode2 else
 					display7seg4Mode3 when state = Smode3 else
-					"1000101" ; -- E
+					"1001100" ; -- E 1001100
 
 	ascii_input5 <= display7seg5Mode1 when state = Smode1 else
 					display7seg5Mode2 when state = Smode2 else
 					display7seg5Mode3 when state = Smode3 else
-					"1000011" ; -- C
+					"1000101" ; -- C 1000101
 
 	ascii_input6 <= display7seg6Mode1 when state = Smode1 else
 					display7seg6Mode2 when state = Smode2 else
 					display7seg6Mode3 when state = Smode3 else
-					"1010100" ; -- T
+					"1010011" ; -- T 1010011
 	
+
+
+	pinDebug <= goToMenu;		
 
 end architecture;

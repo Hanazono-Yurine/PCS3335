@@ -12,7 +12,7 @@ entity mode2 is
 
 		ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
-        ledsmode2 : out std_logic_vector (7 downto 0);
+        ledsmode2 : out std_logic_vector (9 downto 0);
 
         memoryDataInMode2 : out std_logic_vector (20 downto 0); -- valor que vou escrever na memoria (4 bits pra cada digito) * 5 + 1 bit pro sinal
         memoryDataOut : in std_logic_vector (20 downto 0); -- valor que to lendo da memoria

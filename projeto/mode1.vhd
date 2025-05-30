@@ -13,7 +13,7 @@ entity mode1 is
 
 		ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
-        ledsMode1 : out std_logic_vector (7 downto 0);
+        ledsMode1 : out std_logic_vector (9 downto 0);
 
         memoryDataInMode1 : out std_logic_vector (20 downto 0); -- valor que vou escrever na memoria (4 bits pra cada digito) * 5 + 1 bit pro sinal
         memoryDataOut : in std_logic_vector (20 downto 0); -- valor que to lendo da memoria
@@ -133,6 +133,11 @@ begin
     -- S_update1 faz dataTempCounter++
     -- S_update1 faz dataTempCounter--
 
+    ledsMode1(4) <= '1' when state = S_ready else '0';
+    ledsMode1(5) <= '1' when state = S_storeTemp else '0';
+    ledsMode1(6) <= '1' when state = S_deleteTemp else '0';
+
+
     -- ============================================= LOGIC =============================================
 
     freeze_counter: counter 
@@ -194,25 +199,25 @@ begin
         bcd_o => bcd_o
     );
     
-    dataTempIn(3 downto 0) <=   bcd_o when state = S_storeTemp else 
-                                    "0000"      when state = S_deleteTemp else 
-                                    dataTempOut(3 downto 0);
+    dataTempIn(3 downto 0) <=   bcd_o when state = S_storeTemp and dataTempCounterValue = "000" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "000" else 
+                                dataTempOut(3 downto 0);
 
-    dataTempIn(7 downto 4) <=   bcd_o when state = S_storeTemp else 
-                                    "0000"      when state = S_deleteTemp else 
+    dataTempIn(7 downto 4) <=   bcd_o when state = S_storeTemp and dataTempCounterValue = "001" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "001" else 
                                     dataTempOut(7 downto 4);
 
-    dataTempIn(11 downto 8) <=  bcd_o when state = S_storeTemp else 
-                                    "0000"       when state = S_deleteTemp else 
-                                    dataTempOut(11 downto 8);
+    dataTempIn(11 downto 8) <=  bcd_o when state = S_storeTemp and dataTempCounterValue = "010" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "010" else 
+                                dataTempOut(11 downto 8);
 
-    dataTempIn(15 downto 12) <= bcd_o when state = S_storeTemp else 
-                                    "0000"       when state = S_deleteTemp else 
-                                    dataTempOut(15 downto 12);
+    dataTempIn(15 downto 12) <= bcd_o when state = S_storeTemp and dataTempCounterValue = "011" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "011" else 
+                                dataTempOut(15 downto 12);
 
-    dataTempIn(19 downto 16) <= bcd_o when state = S_storeTemp else 
-                                    "0000"       when state = S_deleteTemp else 
-                                    dataTempOut(19 downto 16);  
+    dataTempIn(19 downto 16) <= bcd_o when state = S_storeTemp and dataTempCounterValue = "100" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "100" else 
+                                dataTempOut(19 downto 16);  
 
     --shiftDataTemp <= 4*to_integer(unsigned(dataTempCounterValue));                                                               
     --dataTempIn(3 + shiftDataTemp downto 0 + shiftDataTemp) <= bcd_o when state = S_storeTemp else dataTempOut(3 + shiftDataTemp downto 0 + shiftDataTemp); -- nao gosto disso
@@ -234,9 +239,12 @@ begin
     dataTempCounterClock <= '1' when state = S_update1 or state = S_update2 else '0'; -- da um pulso de clock quando ta nos estados update
 
     dataTempCounterUp <= '1' when state = S_update1 else
-                        '0' when state = S_update1 else
+                        '0' when state = S_update2 or state = S_deleteTemp else
                         '1'; 
     
+    ledsMode1(7) <= dataTempCounterValue(0);
+    ledsMode1(8) <= dataTempCounterValue(1);
+    ledsMode1(9) <= dataTempCounterValue(2);
 
     -- armazanar na memoria
     memoryDataInMode1 <= dataTempOut;
