@@ -9,7 +9,7 @@ entity testMath is
 		c : out std_logic_vector(3 downto 0);
         l : in std_logic_vector(3 downto 0);
 
-        leds : out std_logic_vector (7 downto 0);
+        leds : out std_logic_vector (9 downto 0);
 
 		goToMenu : in std_logic := '0';
 		
@@ -135,7 +135,33 @@ architecture rtl of testMath is
 
 	signal ascii_o0, ascii_o1, ascii_o2, ascii_o3, ascii_o4, ascii_o5 : std_logic_vector (6 downto 0);
 
+	signal start, done: std_logic := '0';
+
+	-- ============================================= FSM STATES =============================================
+    type state_type is (S_start, S_wait, S_done);
+    signal state, next_state: state_type := S_start;
+
 begin
+
+	-- ============================================= FSM PROCESS =============================================
+	-- process padrao de proximo estado da fsm
+	fsm: process(clock, reset)
+	begin
+		if reset = '1' then
+			state <= S_start;
+		elsif rising_edge(clock) then
+			state <= next_state;
+		end if;
+	end process;
+    
+	next_state <=
+		S_wait   when (state = S_start) else 
+		S_wait   when (state = S_wait and done = '0')   else
+		S_done   when (state = S_wait and done = '1')   else	
+		state;
+
+	start <= '1' when state = S_start else '0';
+		
 
 	-- ============================================= INSTANCES =============================================
 	--ip_pll
@@ -159,38 +185,41 @@ begin
 
 	--clock <= clock1_8MHz;
 
-	 -- 1279 + 0893 = 2172
-	 -- 1279 = 0001 0010 0111 1001
-	 -- 0893 = 0000 1000 1001 0011
+	 -- 0058 + 0893 = 0951 = 001110110111
+	 -- 0058 = 0000 0000 0101 1000
+	 -- 0893 = 0000 1000 1001 0011 
+	 -- 
 
     bcd_2_bin_inst0: entity work.bcd_2_bin
 	 port map(
-		bcd_in_0 => "0001",
-		bcd_in_10 => "0010",
-		bcd_in_100 => "0111",
-		bcd_in_1000 => "1001",
+		bcd_in_0 => "1000",
+		bcd_in_10 => "0101",
+		bcd_in_100 => "0000",
+		bcd_in_1000 => "0000",
 		bin_out => bin1
 	);
 
 	bcd_2_bin_inst1: entity work.bcd_2_bin
 	 port map(
-		bcd_in_0 => "0000",
-		bcd_in_10 => "1000",
-		bcd_in_100 => "1001",
-		bcd_in_1000 => "0011",
+		bcd_in_0 => "0011",
+		bcd_in_10 => "1001",
+		bcd_in_100 => "1000",
+		bcd_in_1000 => "0000",
 		bin_out => bin2
 	);
 
 	binResult <= std_logic_vector( unsigned(bin1) + unsigned(bin2) );
 
+	leds <= binResult(9 downto 0); -- 1110110111
+
 
 	bin_to_BCD_inst: entity work.bin_to_BCD
 	 port map(
 		i_Clock => clock,
-		i_Start => '1',
+		i_Start => start,
 		i_Binary => binResult,
 		o_BCD => BCDResult,
-		o_DV => open
+		o_DV => done
 	);
 
 	-- exibir conteudo do data_temp nos displays
