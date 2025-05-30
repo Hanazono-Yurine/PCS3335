@@ -267,7 +267,7 @@ begin
         clock     => clock1_8MHz,
         reset     => '0',
         --divisor   => std_logic_vector(to_unsigned(1,16)),
-        divisor   => (others => '1'),
+        divisor   => (others => '1'), -- 1.8Mhz / 2^16 = 28Hz
         baudOut_n => clock
 	);
 
@@ -284,7 +284,7 @@ begin
 
     keyboard4x4_inst: keyboard4x4
     port map(
-        clock => clockKeyboard,
+        clock => clock,
         reset => reset,
         c => c,
         l => l,
