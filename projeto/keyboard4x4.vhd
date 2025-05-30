@@ -45,7 +45,7 @@ architecture rtl of keyboard4x4 is
 	signal reg_left_output: std_logic := '0';
 	signal reg_c : std_logic_vector(3 downto 0);
 
-	signal asciiTemp : std_logic_vector(6 downto 0) := (others => '1');
+	signal asciiAsync : std_logic_vector(6 downto 0) := (others => '1');
 
 	signal resetFreezeCounter, enFreezeCounter, AchievedWantedValueFreezeCounter : std_logic := '0';
 
@@ -69,8 +69,8 @@ begin
 	end process;
     
 	next_state <=
-		S_idle    when (state = S_idle and asciiTemp = "1111111") else -- 
-		S_pressed when (state = S_idle  and asciiTemp /= "1111111")   else	-- 
+		S_idle    when (state = S_idle and asciiAsync = "1111111") else -- 
+		S_pressed when (state = S_idle  and asciiAsync /= "1111111")   else	-- 
 		S_freeze  when (state = S_pressed)   else -- 
 		S_freeze  when (state = S_freeze and AchievedWantedValueFreezeCounter = '0' )   else -- 
 		S_idle    when (state = S_freeze and AchievedWantedValueFreezeCounter = '1')   else
@@ -121,7 +121,8 @@ begin
 
 	c <= reg_c;
 
-	asciiTemp <=  "0110111" when reg_c(0) = '0' and l(0) = '0' else -- 7
+	-- ascii obtido pelo varedura
+	asciiAsync <=  "0110111" when reg_c(0) = '0' and l(0) = '0' else -- 7
 			            "0111000" when reg_c(1) = '0' and l(0) = '0' else -- 8
 			            "0111001" when reg_c(2) = '0' and l(0) = '0' else -- 9
 			            "1000001" when reg_c(3) = '0' and l(0) = '0' else -- A (OP 1)
@@ -139,7 +140,8 @@ begin
 			            "1001000" when reg_c(3) = '0' and l(3) = '0' else -- H (OP 4)
 			            "1111111"; -- nada ta sendo apertado
 
-	ascii <= asciiTemp;
+	ascii <= asciiAsync when state = S_pressed else "1111111";
+	-- ascii <= asciiAsync;
 
 
 	--leds_debug <= reg_c & l;
