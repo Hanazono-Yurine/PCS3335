@@ -90,6 +90,8 @@ architecture rtl of mode1 is
     signal dataTempReset : std_logic := '0'; 
     signal shiftDataTemp : integer := 0;
 
+    signal asciiTempIn, asciiTempValue : std_logic_vector (6 downto 0);
+
     -- bcd_asciiConverter
     signal bcd_o : std_logic_vector (3 downto 0);
     signal ascii_o0, ascii_o1, ascii_o2, ascii_o3, ascii_o4, ascii_o5 : std_logic_vector (6 downto 0);
@@ -175,6 +177,23 @@ begin
                                 ascii = "0111001" else '0';
 
 
+    ascii_temp: shiftregister -- armazena temporariamente os digitos antes de colocar na memoria
+    generic map (
+        WIDTH => 7
+    )
+    port map (
+        clock       => clock,
+        reset       => '0',
+        serial_i    => '0',
+        loadOrShift => "11",
+        data_i      => asciiTempIn,
+        data_o      => asciiTempValue,
+        serial_o_r  => open,
+        serial_o_l  => open
+    );
+
+    asciiTempIn <= ascii when state = S_storeTemp else asciiTempValue;
+
 
 	data_temp: shiftregister -- armazena temporariamente os digitos antes de colocar na memoria
     generic map (
@@ -193,30 +212,31 @@ begin
 
     bcd_asciiConverter_inst: bcd_asciiConverter
     port map(
-        ascii_i => ascii,
+        --ascii_i => ascii, 
+        ascii_i => asciiTempValue,
         bcd_i => "0000",
         ascii_o => open,
         bcd_o => bcd_o
     );
     
     dataTempIn(3 downto 0) <=   bcd_o when state = S_storeTemp and dataTempCounterValue = "000" else 
-                                "0000" when state = S_deleteTemp and dataTempCounterValue = "000" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "001" else 
                                 dataTempOut(3 downto 0);
 
     dataTempIn(7 downto 4) <=   bcd_o when state = S_storeTemp and dataTempCounterValue = "001" else 
-                                "0000" when state = S_deleteTemp and dataTempCounterValue = "001" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "010" else 
                                     dataTempOut(7 downto 4);
 
     dataTempIn(11 downto 8) <=  bcd_o when state = S_storeTemp and dataTempCounterValue = "010" else 
-                                "0000" when state = S_deleteTemp and dataTempCounterValue = "010" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "011" else 
                                 dataTempOut(11 downto 8);
 
     dataTempIn(15 downto 12) <= bcd_o when state = S_storeTemp and dataTempCounterValue = "011" else 
-                                "0000" when state = S_deleteTemp and dataTempCounterValue = "011" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "100" else 
                                 dataTempOut(15 downto 12);
 
     dataTempIn(19 downto 16) <= bcd_o when state = S_storeTemp and dataTempCounterValue = "100" else 
-                                "0000" when state = S_deleteTemp and dataTempCounterValue = "100" else 
+                                "0000" when state = S_deleteTemp and dataTempCounterValue = "101" else 
                                 dataTempOut(19 downto 16);  
 
     --shiftDataTemp <= 4*to_integer(unsigned(dataTempCounterValue));                                                               
@@ -236,10 +256,11 @@ begin
         data_o => dataTempCounterValue
     );
 
-    dataTempCounterClock <= '1' when state = S_update1 or state = S_update2 else '0'; -- da um pulso de clock quando ta nos estados update
+    dataTempCounterClock <= '1' when (state = S_update1 and dataTempCounterValue /= "101" ) or (state = S_update2 and dataTempCounterValue /= "000" ) else '0'; -- da um pulso de clock quando ta nos estados update
+
 
     dataTempCounterUp <= '1' when state = S_update1 else
-                        '0' when state = S_update2 or state = S_deleteTemp else
+                        '0' when state = S_update2 or state = S_deleteTemp else -- tem que mudar o valor de up um pouco antes de dar o pulso de clock no contador
                         '1'; 
     
     ledsMode1(7) <= dataTempCounterValue(0);
