@@ -87,23 +87,22 @@ architecture rtl of testMath is
 		);
     end component;
 
-	component bcd_2_bin is
-		Port ( bcd_in_0 : in  STD_LOGIC_VECTOR (3 downto 0);
-			bcd_in_10 : in  STD_LOGIC_VECTOR (3 downto 0);
-			bcd_in_100 : in  STD_LOGIC_VECTOR (3 downto 0);
-			bcd_in_1000 : in  STD_LOGIC_VECTOR (3 downto 0);
-			bin_out : out  STD_LOGIC_VECTOR (13 downto 0) := (others => '0'));
+	component BCD_to_bin_UNSIGNED is
+		Port ( 
+			bcd_in : in  STD_LOGIC_VECTOR (19 downto 0);
+			bin_out : out  STD_LOGIC_VECTOR (16 downto 0) := (others => '0')
+			);
 	end component;
 
-	component bin_to_BCD is
+	component bin_to_BCD_UNSIGNED is
 		port (
 			i_Clock  : in std_logic;
 			i_Start  : in std_logic;
-			i_Binary : in std_logic_vector(14-1 downto 0);
-			
-			o_BCD : out std_logic_vector(4*4-1 downto 0);
+			i_Binary : in std_logic_vector(16 downto 0); 
+				
+			o_BCD : out std_logic_vector(4*5-1 downto 0);
 			o_DV  : out std_logic
-			);
+		);
 	end component;
 
 	component bcd_asciiConverter is
@@ -130,8 +129,8 @@ architecture rtl of testMath is
 	signal ascii_input1, ascii_input2, ascii_input3, ascii_input4, ascii_input5, ascii_input6 : std_logic_vector (6 downto 0);
 
 
-	signal bin1, bin2, binResult : std_logic_vector(13 downto 0) := (others => '0') ;
-	signal BCDResult : std_logic_vector(15 downto 0) := (others => '0') ;
+	signal bin1, bin2, binResult : std_logic_vector(16 downto 0) := (others => '0') ;
+	signal BCDResult : std_logic_vector(19 downto 0) := (others => '0') ;
 
 	signal ascii_o0, ascii_o1, ascii_o2, ascii_o3, ascii_o4, ascii_o5 : std_logic_vector (6 downto 0);
 
@@ -186,34 +185,27 @@ begin
 	--clock <= clock1_8MHz;
 
 	 -- 0058 + 0893 = 0951 = 001110110111
-	 -- 0058 = 0000 0000 0101 1000
-	 -- 0893 = 0000 1000 1001 0011 
+	 -- 0058 = 0000 0000 0000 0101 1000
+	 -- 0893 = 0000 0000 1000 1001 0011 
 	 -- 
 
-    bcd_2_bin_inst0: entity work.bcd_2_bin
+	BCD_to_bin_UNSIGNED_inst0: entity work.BCD_to_bin_UNSIGNED
 	 port map(
-		bcd_in_0 => "1000",
-		bcd_in_10 => "0101",
-		bcd_in_100 => "0000",
-		bcd_in_1000 => "0000",
+		bcd_in => "00000000000001011000",
 		bin_out => bin1
 	);
 
-	bcd_2_bin_inst1: entity work.bcd_2_bin
+	BCD_to_bin_UNSIGNED_inst1: entity work.BCD_to_bin_UNSIGNED
 	 port map(
-		bcd_in_0 => "0011",
-		bcd_in_10 => "1001",
-		bcd_in_100 => "1000",
-		bcd_in_1000 => "0000",
+		bcd_in => "00000000100010010011",
 		bin_out => bin2
 	);
 
 	binResult <= std_logic_vector( unsigned(bin1) + unsigned(bin2) );
 
-	leds <= binResult(9 downto 0); -- 1110110111
+	--leds <= binResult(9 downto 0); -- 1110110111
 
-
-	bin_to_BCD_inst: entity work.bin_to_BCD
+	bin_to_BCD_UNSIGNED_inst: entity work.bin_to_BCD_UNSIGNED
 	 port map(
 		i_Clock => clock,
 		i_Start => start,
@@ -255,6 +247,14 @@ begin
         bcd_o => open
     );
 
+	bcd_asciiConverter_inst4: bcd_asciiConverter
+    port map(
+        ascii_i => "0000000",
+        bcd_i => BCDResult(19 downto 16),
+        ascii_o => ascii_o4,
+        bcd_o => open
+    );
+
 	-- displays 7 seg
 	ascii_input1 <= ascii_o0; -- S
 
@@ -264,7 +264,7 @@ begin
 
 	ascii_input4 <= ascii_o3; -- E
 
-	ascii_input5 <= "1111111" ; -- C
+	ascii_input5 <= ascii_o4 ; -- C
 
 	ascii_input6 <= "1111111" ; -- T
 

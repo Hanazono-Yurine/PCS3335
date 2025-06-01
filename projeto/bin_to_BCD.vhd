@@ -1,128 +1,70 @@
--------------------------------------------------------------------------------
--- File Downloaded from http://www.nandland.com
--------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
- 
+
+
+-- converter binario SIGNED(complemeto de 2) de 18bits para BCD de 5 digitos COM sinal (1 bit de sinal + 5 * 4bits de cada digito BCD)
+-- +99.999 <- 01 1000 0110 1001 1111
+-- -99.999 <- 10 0111 1001 0110 0001
 entity bin_to_BCD is
-  port (
-    i_Clock  : in std_logic;
-    i_Start  : in std_logic;
-    i_Binary : in std_logic_vector(14-1 downto 0);
-     
-    o_BCD : out std_logic_vector(4*4-1 downto 0);
-    o_DV  : out std_logic
-    );
-end entity bin_to_BCD;
- 
+	port (
+        i_Clock  : in std_logic;
+        i_Start  : in std_logic;
+        bin_in  : in std_logic_vector(17 downto 0) := (others => '0'); -- binario SIGNED(complemento de 2)
+
+        bcd_out : out std_logic_vector(20 downto 0);
+        o_DV  : out std_logic -- ta pronto
+	);
+end entity;
+
 architecture rtl of bin_to_BCD is
 
-  signal g_DECIMAL_DIGITS : integer := 4;
-  signal g_INPUT_WIDTH : integer := 14;
- 
-  type t_BCD_State is (s_IDLE, s_SHIFT, s_CHECK_SHIFT_INDEX, s_ADD,
-                       s_CHECK_DIGIT_INDEX, s_BCD_DONE);
-  signal r_SM_Main : t_BCD_State := s_IDLE;
- 
-  -- The vector that contains the output BCD
-  signal r_BCD : std_logic_vector(g_DECIMAL_DIGITS*4-1 downto 0) := (others => '0');
- 
-  -- The vector that contains the input binary value being shifted.
-  signal r_Binary : std_logic_vector(g_INPUT_WIDTH-1 downto 0) := (others => '0');
-   
-  -- Keeps track of which Decimal Digit we are indexing
-  signal r_Digit_Index : natural range 0 to g_DECIMAL_DIGITS-1 := 0;
- 
-  -- Keeps track of which loop iteration we are on.
-  -- Number of loops performed = g_INPUT_WIDTH
-  signal r_Loop_Count : natural range 0 to g_INPUT_WIDTH-1  := 0;
-   
-begin
- 
-  Double_Dabble : process (i_Clock)
-    variable v_Upper     : natural;
-    variable v_Lower     : natural;
-    variable v_BCD_Digit : unsigned(3 downto 0);
-  begin
-    if rising_edge(i_Clock) then
- 
-      case r_SM_Main is
- 
-        -- Stay in this state until i_Start comes along
-        when s_IDLE =>
-          if i_Start = '1' then
-            r_BCD     <= (others => '0');
-            r_Binary  <= i_Binary;
-            r_SM_Main <= s_SHIFT;
-          else
-            r_SM_Main <= s_IDLE;
-          end if;
- 
-        -- Always shift the BCD Vector until we have shifted all bits through
-        -- Shift the most significant bit of r_Binary into r_BCD lowest bit.
-        when s_SHIFT =>
-          r_BCD     <= r_BCD(r_BCD'left-1 downto 0) & r_Binary(r_Binary'left);
-          r_Binary  <= r_Binary(r_Binary'left-1 downto 0) & '0';
-          r_SM_Main <= s_CHECK_SHIFT_INDEX;
- 
-        -- Check if we are done with shifting in r_Binary vector 
-        when s_CHECK_SHIFT_INDEX => 
-          if r_Loop_Count = g_INPUT_WIDTH-1 then
-            r_Loop_Count <= 0;
-            r_SM_Main    <= s_BCD_DONE;
-          else
-            r_Loop_Count <= r_Loop_Count + 1;
-            r_SM_Main    <= s_ADD; 
-          end if; 
-         
-        -- Break down each BCD Digit individually. Check them one-by-one to 
-        -- see if they are greater than 4. If they are, increment by 3. 
-        -- Put the result back into r_BCD Vector. Note that v_BCD_Digit is 
-        -- unsigned. Numeric_std does not perform math on std_logic_vector. 
-        when s_ADD =>
-          v_Upper     := r_Digit_Index*4 + 3;
-          v_Lower     := r_Digit_Index*4;
-          --v_BCD_Digit := unsigned(r_BCD(v_Upper downto v_Lower));
-          if r_Digit_Index = 0 then
-            v_BCD_Digit := unsigned(r_BCD(3 downto 0));
-          elsif r_Digit_Index = 1 then
-            v_BCD_Digit := unsigned(r_BCD(7 downto 4));
-          elsif r_Digit_Index = 2 then
-            v_BCD_Digit := unsigned(r_BCD(11 downto 8));
-          else
-            v_BCD_Digit := unsigned(r_BCD(15 downto 12));
-          end if;
-          
+	-- ========================================= COMPONENTS ================================	
 
-          if v_BCD_Digit > 4 then
-            v_BCD_Digit := v_BCD_Digit + 3;
-          end if;
- 
-          r_BCD(v_Upper downto v_Lower) <= std_logic_vector(v_BCD_Digit);
-          r_SM_Main <= s_CHECK_DIGIT_INDEX; 
- 
-        -- Check if we are done incrementing all of the BCD Digits 
-        when s_CHECK_DIGIT_INDEX =>
-          if r_Digit_Index = g_DECIMAL_DIGITS-1 then
-            r_Digit_Index <= 0;
-            r_SM_Main     <= s_SHIFT;
-          else
-            r_Digit_Index <= r_Digit_Index + 1;
-            r_SM_Main     <= s_ADD; 
-          end if; 
-         
-        when s_BCD_DONE =>
-          r_SM_Main <= s_IDLE; 
- 
-        when others =>
-          r_SM_Main <= s_IDLE;
-           
-      end case;
-    end if;                             -- rising_edge(i_Clock)
-  end process Double_Dabble;
- 
-  o_DV  <= '1' when r_SM_Main = s_BCD_DONE else '0';
-  o_BCD <= r_BCD;
-   
-end architecture rtl;
+    component bin_to_BCD_UNSIGNED is
+        port (
+            i_Clock  : in std_logic;
+            i_Start  : in std_logic;
+            i_Binary : in std_logic_vector(16 downto 0); -- binario UNSIGNED
+
+            
+            o_BCD : out std_logic_vector(4*5-1 downto 0);
+            o_DV  : out std_logic
+        );
+    end component;
+
+
+	-- ============================================= SIGNAL ============================================
+
+    signal bcd_out_UNSIGNED : std_logic_vector(19 downto 0) := (others => '0');
+    signal binWithSignalBit: std_logic_vector(17 downto 0) := (others => '0');
+    signal minusBin : signed(35 downto 0) := (others => '0');
+    signal MINUS_ONE, binUnsigned : signed(17 downto 0) := (others => '0');
+    
+	
+begin
+	-- ============================================= LOGIC =============================================
+
+    -- converte o binario com sinal pra sem sinal
+    MINUS_ONE <= (others => '1');
+
+    minusBin <= signed(bin_in) * MINUS_ONE;
+    binUnsigned <= signed(bin_in) when (bin_in(17) = '0') else
+                 minusBin(17 downto 0); -- os restante dos bits (33 downto 18) eh tudo 1 pq o numero eh negativo em complemento de 2, entao posso ignorar
+
+
+    -- converte o binario sem sinal pra BCD sem sinal
+    bin_to_BCD_UNSIGNED_inst: entity work.bin_to_BCD_UNSIGNED
+     port map(
+        i_Clock => i_Clock,
+        i_Start => i_Start,
+        i_Binary => std_logic_vector(binUnsigned(16 downto 0)),
+        o_BCD => bcd_out_UNSIGNED,
+        o_DV => o_DV
+    );
+	
+    -- Faz a saida ser um BCD com sinal de acordo com o sinal do binario da entrada
+    bcd_out <= "0" & bcd_out_UNSIGNED when (bin_in(17) = '0') else
+               "1" & bcd_out_UNSIGNED;
+
+end architecture;
