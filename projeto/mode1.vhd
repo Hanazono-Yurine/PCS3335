@@ -74,8 +74,8 @@ architecture rtl of mode1 is
 
 	-- ============================================= SIGNAL =============================================
 
+    -- freeze counter
     signal resetFreezeCounter, enFreezeCounter, AchievedWantedValueFreezeCounter : std_logic := '0';
-
     signal valueFreezeCounter, wantedValueFreezeCounter : std_logic_vector (4 downto 0);
 
     signal keyNumberPressed : std_logic := '0';
@@ -177,7 +177,7 @@ begin
                                 ascii = "0111001" else '0';
 
 
-    ascii_temp: shiftregister -- armazena temporariamente os digitos antes de colocar na memoria
+    ascii_temp: shiftregister -- armazena o ultimo ascii recebido quando entra no estado S_storeTemp
     generic map (
         WIDTH => 7
     )
@@ -237,7 +237,9 @@ begin
 
     dataTempIn(19 downto 16) <= bcd_o when state = S_storeTemp and dataTempCounterValue = "100" else 
                                 "0000" when state = S_deleteTemp and dataTempCounterValue = "101" else 
-                                dataTempOut(19 downto 16);  
+                                dataTempOut(19 downto 16);
+                                
+    dataTempIn(20) <= not dataTempIn(20) when ascii = "1000001" else dataTempIn(20); -- inverte o sinal quando aperta F1
 
     --shiftDataTemp <= 4*to_integer(unsigned(dataTempCounterValue));                                                               
     --dataTempIn(3 + shiftDataTemp downto 0 + shiftDataTemp) <= bcd_o when state = S_storeTemp else dataTempOut(3 + shiftDataTemp downto 0 + shiftDataTemp); -- nao gosto disso
@@ -323,13 +325,7 @@ begin
         bcd_o => open
     );
 
-    bcd_asciiConverter_inst5: bcd_asciiConverter
-    port map(
-        ascii_i => "0000000",
-        bcd_i => "0000",
-        ascii_o => ascii_o5,
-        bcd_o => open
-    );
+    ascii_o5 <= "0101101" when dataTempOut(20) = '1' else "1111111";
 
     display7seg1Mode1 <= ascii_o0;
     display7seg2Mode1 <= ascii_o1;
