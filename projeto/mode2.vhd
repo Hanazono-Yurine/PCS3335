@@ -209,6 +209,9 @@ begin
         bin_out => bin2
     );
 
+    --num2 eh o numero no topo da pilha
+    --num1 eh o numero antes do topo da pilha
+
 	binResultAdd <= std_logic_vector( unsigned(bin1) + unsigned(bin2) );
 
 	binResultSub <= std_logic_vector( unsigned(bin1) - unsigned(bin2) );
@@ -251,6 +254,10 @@ begin
 	-- atualiza stackSize reg
     stackSizeCounterClockMode2 <= '1' when state = S_updateStackSize else '0'; -- da um pulso de clock
 	stackSizeCounterUpMode2 <= '0'; -- ta setado pra diminuir o valor
+
+    -- leds
+
+	ledsmode2(3 downto 0) <= stackSizeCounterValue;
 
 	
     -- exibir nos displays o ultimo elemento da pilha

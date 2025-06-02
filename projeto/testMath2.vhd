@@ -179,19 +179,21 @@ begin
         reset     => '0',
         divisor   => std_logic_vector(to_unsigned(1,16)),
         --divisor   => (others => '1'),
-        baudOut_n => clock
+        baudOut_n => open
 	);
+	clock <= clock1_8MHz;
+	
 
 	--clock <= clock1_8MHz;
 
-	 -- +0058 + -00893 = -00835 = 11 1111 1100 1011 1101(bin signed) = 1 0000 0000 1000 0011 0101(bcd signed)
+	 -- -00058 - -00893 = -00835 = 11 1111 1100 1011 1101(bin signed) = 1 0000 0000 1000 0011 0101(bcd signed)
 	 -- +00058 = 1 0000 0000 0000 0101 1000
 	 -- -00893 = 1 0000 0000 1000 1001 0011 
 	 -- 
 
     BCD_to_bin_inst0: entity work.BCD_to_bin
      port map(
-        bcd_in => "000000000000001011000",
+        bcd_in => "100000000000001011000",
         bin_out => bin1
     );
 
@@ -201,7 +203,7 @@ begin
         bin_out => bin2
     );
 
-	binResult <= std_logic_vector( unsigned(bin1) + unsigned(bin2) );
+	binResult <= std_logic_vector( unsigned(bin1) - unsigned(bin2) );
 
 	--leds <= binResult(9 downto 0); -- 1110110111
 

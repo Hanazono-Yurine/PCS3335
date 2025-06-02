@@ -84,10 +84,10 @@ architecture rtl of calculator is
     component keyboard4x4 is
 		port (
 			clock, reset: in std_logic := '0';
+			clockKeyboard, clock28Hz: in std_logic := '0';
 			c : out std_logic_vector(3 downto 0);
 			l : in std_logic_vector(3 downto 0);
-			ascii : out std_logic_vector(6 downto 0);
-			isPressed : out std_logic := '0'
+			ascii : out std_logic_vector(6 downto 0) -- ASCII da tecla presionda
 		);
     end component;
 
@@ -196,7 +196,7 @@ architecture rtl of calculator is
 	signal clockDivisorValue: std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(CLOCK_DIVISOR_VALUE,16));
 
 	-- clocks
-	signal clock1_8MHz, clock, clockKeyboard: std_logic := '1';
+	signal clock1_8MHz, clock28Hz ,clock, clockKeyboard: std_logic := '1';
 
 	--signal leds_debug : std_logic_vector(7 downto 0);
 
@@ -268,29 +268,32 @@ begin
         reset     => '0',
         --divisor   => std_logic_vector(to_unsigned(1,16)),
         divisor   => (others => '1'), -- 1.8Mhz / 2^16 = 28Hz
-        baudOut_n => clock
+        baudOut_n => clock28Hz
 	);
+
+	clock <= clock1_8MHz;
 
 	baudrategenerator_inst1: baudRateGenerator
 	port map (
         clock     => clock,
         reset     => '0',
-        divisor   => std_logic_vector(to_unsigned(8,16)),
+        divisor   => std_logic_vector(to_unsigned(4,16)),
         --divisor   => (others => '1'),
         baudOut_n => clockKeyboard
 	);
 
 	--clock <= clockKeyboard;
 
-    keyboard4x4_inst: keyboard4x4
-    port map(
-        clock => clock,
-        reset => reset,
-        c => c,
-        l => l,
-        ascii => ascii,
-        isPressed => isPressed
-    );
+    keyboard4x4_inst: entity work.keyboard4x4
+	 port map(
+		clock => clock,
+		reset => reset,
+		clockKeyboard => clockKeyboard,
+		clock28Hz => clock28Hz,
+		c => c,
+		l => l,
+		ascii => ascii
+	);
 
 	stackSize: counter 
     generic map (
@@ -443,10 +446,10 @@ begin
 	end process;
     
 	next_state <=
-		S_menu   when (state = S_menu and ascii_temp = "1111111") else -- nada ta sendo apertado 
-		Smode1   when (state = S_menu and ascii_temp = "0110001") else -- apertou botao 1 
-		Smode2   when (state = S_menu and ascii_temp = "0110010") else -- apertou botao 2
-		Smode3   when (state = S_menu and ascii_temp = "0110011") else -- apertou botao 3
+		S_menu   when (state = S_menu and ascii = "1111111") else -- nada ta sendo apertado 
+		Smode1   when (state = S_menu and ascii = "0110001") else -- apertou botao 1 
+		Smode2   when (state = S_menu and ascii = "0110010") else -- apertou botao 2
+		Smode3   when (state = S_menu and ascii = "0110011") else -- apertou botao 3
 		Smode1   when (state = Smode1 and goToMenu = '0')   else
 		S_menu   when (state = Smode1 and goToMenu = '1')   else	
 		Smode2   when (state = Smode2 and goToMenu = '0')   else
@@ -457,7 +460,7 @@ begin
 
 	-- ============================================= LOGIC =============================================
 	
-	ascii_temp <= ascii when state = S_menu else "1111111";
+	--ascii_temp <= ascii when state = S_menu else "1111111";
 
 	--pressed1 <= '1' when ascii = "0110001" else '0';
 
@@ -498,14 +501,14 @@ begin
 	asciiMode3 <= ascii when state = Smode3 else "1111111";
 	
 	-- leds
-	leds(0) <= '1' when state = S_menu else '0';
-	leds(1) <= '1' when state = Smode1 else '0';
-	leds(2) <= '1' when state = Smode2 else '0';
-	leds(3) <= '1' when state = Smode3 else '0';
-	leds(9 downto 4) <= ledsMode1(9 downto 4) when state = Smode1 else
-						ledsMode2(9 downto 4) when state = Smode2 else
-						ledsMode3(9 downto 4) when state = Smode3 else
-						"000000";
+	--leds(0) <= '1' when state = S_menu else '0';
+	--leds(1) <= '1' when state = Smode1 else '0';
+	--leds(2) <= '1' when state = Smode2 else '0';
+	--leds(3) <= '1' when state = Smode3 else '0';
+	leds(9 downto 0) <= ledsMode1(9 downto 0) when state = Smode1 else
+						ledsMode2(9 downto 0) when state = Smode2 else
+						ledsMode3(9 downto 0) when state = Smode3 else
+						(others => '0') ;
 
 	-- displays 7 seg
 	ascii_input1 <= display7seg1Mode1 when state = Smode1 else

@@ -98,7 +98,7 @@ architecture rtl of mode1 is
     
 
     -- ============================================= FSM STATES =============================================
-    type state_type is (S_ready, S_storeTemp, S_update1, S_deleteTemp, S_update2, S_storeMemory, S_update3, S_freeze2);
+    type state_type is (S_ready, S_storeAscii, S_storeTemp, S_update1, S_deleteTemp, S_update2, S_storeMemory, S_update3, S_freeze2);
     signal state, next_state: state_type := S_ready;
 
 	
@@ -119,9 +119,10 @@ begin
     
 	next_state <=
 		S_ready   when (state = S_ready and ascii = "1111111") else -- ta apertando nada
-		S_storeTemp   when (state = S_ready and keyNumberPressed = '1')   else	-- apertou algum digito
+		S_storeAscii   when (state = S_ready and keyNumberPressed = '1')   else	-- apertou algum digito
 		S_deleteTemp  when (state = S_ready and ascii = "1000011")   else -- apertou C
 		S_storeMemory when (state = S_ready and ascii = "1000101")   else -- apertou E
+        S_storeTemp   when (state = S_storeAscii)   else
 		S_update1   when (state = S_storeTemp)   else
         S_freeze2   when (state = S_update1)   else
         S_update2   when (state = S_deleteTemp)  else
@@ -135,9 +136,9 @@ begin
     -- S_update1 faz dataTempCounter++
     -- S_update1 faz dataTempCounter--
 
-    ledsMode1(4) <= '1' when state = S_ready else '0';
-    ledsMode1(5) <= '1' when state = S_storeTemp else '0';
-    ledsMode1(6) <= '1' when state = S_deleteTemp else '0';
+    --ledsMode1(4) <= '1' when state = S_ready else '0';
+    --ledsMode1(5) <= '1' when state = S_storeTemp else '0';
+    --ledsMode1(6) <= '1' when state = S_deleteTemp else '0';
 
 
     -- ============================================= LOGIC =============================================
@@ -192,7 +193,9 @@ begin
         serial_o_l  => open
     );
 
-    asciiTempIn <= ascii when state = S_storeTemp else asciiTempValue;
+    asciiTempIn <= ascii when state = S_storeAscii else asciiTempValue;
+
+    ledsMode1(6 downto 0) <= asciiTempValue;
 
 
 	data_temp: shiftregister -- armazena temporariamente os digitos antes de colocar na memoria
@@ -327,11 +330,11 @@ begin
 
     ascii_o5 <= "0101101" when dataTempOut(20) = '1' else "1111111";
 
-    display7seg1Mode1 <= ascii_o0;
-    display7seg2Mode1 <= ascii_o1;
-    display7seg3Mode1 <= ascii_o2;
-    display7seg4Mode1 <= ascii_o3;
-    display7seg5Mode1 <= ascii_o4;
+    display7seg1Mode1 <= "1011111" when dataTempCounterValue = "000" else ascii_o0;
+    display7seg2Mode1 <= "1011111" when dataTempCounterValue = "001" else ascii_o1;
+    display7seg3Mode1 <= "1011111" when dataTempCounterValue = "010" else ascii_o2;
+    display7seg4Mode1 <= "1011111" when dataTempCounterValue = "011" else ascii_o3;
+    display7seg5Mode1 <= "1011111" when dataTempCounterValue = "100" else ascii_o4;
     display7seg6Mode1 <= ascii_o5;
 
 end architecture;

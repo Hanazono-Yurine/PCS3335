@@ -141,6 +141,11 @@ begin
 	
 	memPosMode3 <= to_integer(unsigned(posCounterValue));
 
+	-- leds
+
+	ledsmode3(3 downto 0) <= posCounterValue;
+	ledsmode3(7 downto 4) <= stackSizeCounterValue;
+
 	freeze_counter: counter 
     generic map (
         WIDTH => 5

@@ -5,10 +5,10 @@ use ieee.numeric_std.all;
 entity keyboard4x4 is
 	port (
 		clock, reset: in std_logic := '0';
+		clockKeyboard, clock28Hz: in std_logic := '0';
 		c : out std_logic_vector(3 downto 0);
 		l : in std_logic_vector(3 downto 0);
-		ascii : out std_logic_vector(6 downto 0); -- ASCII da tecla presionda
-		isPressed : out std_logic := '0' -- acho que nao precisa disso, depois tiro
+		ascii : out std_logic_vector(6 downto 0) -- ASCII da tecla presionda
 	);
 end entity;
 
@@ -52,7 +52,7 @@ architecture rtl of keyboard4x4 is
     signal valueFreezeCounter, wantedValueFreezeCounter : std_logic_vector (4 downto 0);
 
 	-- ============================================= FSM STATES =============================================
-    type state_type is (S_idle, S_pressed, S_freeze);
+    type state_type is (S_idle, S_sendAscii1, S_sendAscii2, S_freeze);
     signal state, next_state: state_type := S_idle;
 
 begin
@@ -70,8 +70,9 @@ begin
     
 	next_state <=
 		S_idle    when (state = S_idle and asciiAsync = "1111111") else -- 
-		S_pressed when (state = S_idle  and asciiAsync /= "1111111")   else	-- 
-		S_freeze  when (state = S_pressed)   else -- 
+		S_sendAscii1 when (state = S_idle  and asciiAsync /= "1111111")   else	-- 
+		S_sendAscii2  when (state = S_sendAscii1)   else 
+		S_freeze  when (state = S_sendAscii2)   else 
 		S_freeze  when (state = S_freeze and AchievedWantedValueFreezeCounter = '0' )   else -- 
 		S_idle    when (state = S_freeze and AchievedWantedValueFreezeCounter = '1')   else
 		state;
@@ -83,7 +84,7 @@ begin
         WIDTH => 5
     )
     port map (
-        clock  => clock,
+        clock  => clock28Hz,
         reset  => resetFreezeCounter,
         enable => enFreezeCounter,
         load   => '0',
@@ -109,7 +110,7 @@ begin
       WIDTH => 4
     )
     port map (
-      clock       => clock,
+      clock       => clockKeyboard,
       reset       => '0',
       serial_i    => reg_left_output,
       loadOrShift => "01",
@@ -140,8 +141,8 @@ begin
 			            "1001000" when reg_c(3) = '0' and l(3) = '0' else -- H (OP 4)
 			            "1111111"; -- nada ta sendo apertado
 
-	ascii <= asciiAsync when state = S_pressed else "1111111";
-	-- ascii <= asciiAsync;
+	ascii <= asciiAsync when state = S_sendAscii1 or state = S_sendAscii2 else "1111111";
+	--ascii <= asciiAsync;
 
 
 	--leds_debug <= reg_c & l;
