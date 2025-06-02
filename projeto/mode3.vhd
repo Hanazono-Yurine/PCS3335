@@ -7,8 +7,6 @@ use ieee.numeric_std.all;
 entity mode3 is
 	port (
 		clock, reset : in std_logic := '0';
-		
-		up, down : in std_logic := '0';
 
 		ascii : in std_logic_vector(6 downto 0); -- ASCII da tecla presionda
 
@@ -60,9 +58,26 @@ architecture rtl of mode3 is
         );
     end component;
 
-	constant maxIndex : integer := 16;
+	component counter is
+		generic (
+				WIDTH : natural := 8 -- Size in bits
+		);
+		port (
+				clock, reset, enable, load, up : in std_logic;
+				data_i : in std_logic_vector( WIDTH-1 downto 0 );
+				data_o : out std_logic_vector( WIDTH-1 downto 0 )
+		);
+	end component;
 
 	-- ============================================= SIGNAL =============================================
+
+	-- position_memory_counter
+	signal posCounterClock, posCounterUp : std_logic := '0';
+	signal posCounterValue : std_logic_vector (3 downto 0);
+
+	-- freeze counter
+    signal resetFreezeCounter, enFreezeCounter, AchievedWantedValueFreezeCounter : std_logic := '0';
+    signal valueFreezeCounter, wantedValueFreezeCounter : std_logic_vector (4 downto 0);
 
 	signal index : integer := 0;
 	signal memAscii1 : std_logic_vector(6 downto 0);
@@ -72,12 +87,83 @@ architecture rtl of mode3 is
 	signal memAscii5 : std_logic_vector(6 downto 0);
 	
 	-- ============================================= FSM STATES =============================================
-	type state_type is (S_idle, S_next, S_prev);
-	signal state, next_state: state_type := S_idle;
+    type state_type is (S_ready, S_setUpTo0, S_updatePosDown, S_setUpTo1, S_updatePosUp, S_freeze);
+    signal state, next_state: state_type := S_ready;
 
 begin
 
 	-- ============================================= INSTANCES =============================================
+
+	-- ============================================= FSM PROCESS =============================================
+	-- process padrao de proximo estado da fsm
+	fsm: process(clock, reset)
+	begin
+		if reset = '1' then
+			state <= S_ready;
+		elsif rising_edge(clock) then
+			state <= next_state;
+		end if;
+	end process;
+    
+	next_state <=
+		S_ready   		when (state = S_ready and ascii = "1111111") else -- ta apertando nada
+		S_setUpTo1   	when (state = S_ready and ascii = "0111000")   else	-- apertou 8
+		S_updatePosUp   when (state = S_setUpTo1)   else 
+		S_freeze  		when (state = S_updatePosUp)   else 
+		S_setUpTo0   	when (state = S_ready and ascii = "0110010")   else	-- apertou 2
+		S_updatePosDown when (state = S_setUpTo0)   else 
+		S_freeze  		when (state = S_updatePosDown)   else 
+		S_freeze   		when (state = S_freeze and AchievedWantedValueFreezeCounter = '0') else 
+		S_ready     	when (state = S_freeze and AchievedWantedValueFreezeCounter = '1') else
+		state;
+
+
+	-- ============================================= LOGIC =============================================
+
+
+	position_memory_counter: counter 
+    generic map (
+        WIDTH => 4
+    )
+    port map (
+        clock  => posCounterClock,
+        reset  => reset,
+        enable => '1',
+        load   => '0',
+        up     => posCounterUp,
+        data_i => (others => '0'),
+        data_o => posCounterValue
+    );
+
+	posCounterUp <= '0' when state = S_setUpTo0 or state = S_updatePosDown else '1';
+
+	posCounterClock <= '1' when state = S_updatePosDown or state = S_updatePosUp else '0';
+	
+	memPosMode3 <= to_integer(unsigned(posCounterValue));
+
+	freeze_counter: counter 
+    generic map (
+        WIDTH => 5
+    )
+    port map (
+        clock  => clock,
+        reset  => resetFreezeCounter,
+        enable => enFreezeCounter,
+        load   => '0',
+        up     => '1',
+        data_i => (others => '0'),
+        data_o => valueFreezeCounter
+    );
+
+    wantedValueFreezeCounter <= (others => '1') ;
+
+    enFreezeCounter <= '0' when valueFreezeCounter = wantedValueFreezeCounter else '1'; -- trava o contador quando chega no valor maximo
+
+    resetFreezeCounter <= '0' when state = S_freeze else '1'; --faz comecar a contar no estados freeze
+
+    AchievedWantedValueFreezeCounter <= '1' when valueFreezeCounter = wantedValueFreezeCounter else '0';
+
+	
 
 	conv1: bcd_asciiConverter
 	port map(
@@ -115,51 +201,11 @@ begin
 			bcd_o => open
 	);
 
-	-- ============================================= FSM PROCESS =============================================
-	-- process padrao de proximo estado da fsm
-	fsm: process(clock, reset)
-	begin
-		if reset = '1' then
-			state <= S_idle;
-		elsif rising_edge(clock) then
-			state <= next_state;
-		end if;
-	end process;
-    
-	next_state <= S_idle when (state = S_next or state = S_prev) else
-	              S_next when (up = '1') else
-	              S_prev when (down = '1') else
-		            state;
-
-	process(clock, state)
-		variable lock : std_logic := '0';
-	begin
-		if state = S_next and lock = '0' then
-			index <= index + 1;
-			lock := '1';
-		elsif state = S_prev and lock = '0' then
-			index <= index - 1;
-			lock := '1';
-		else
-			lock := '0';
-		end if;
-
-		if index > (maxIndex - 1) then
-			index <= 0;
-		end if;
-		if index < 0 then
-			index <= maxIndex;
-		end if;
-	end process;
-
-	memPosMode3 <= index;
-
 	display7seg1mode3 <= memAscii1;
 	display7seg2mode3 <= memAscii2;
 	display7seg3mode3 <= memAscii3;
 	display7seg4mode3 <= memAscii4;
 	display7seg5mode3 <= memAscii5;
-	display7seg6mode3 <= "1000000" when memoryDataOut(20) = '1' else
-											 "1111111";
+	display7seg6mode3 <= "0101101" when memoryDataOut(20) = '1' else "1111111";
 
 end architecture;

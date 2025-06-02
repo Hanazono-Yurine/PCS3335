@@ -365,8 +365,6 @@ begin
 	 port map(
 		clock => clock,
 		reset => reset,
-		up => up,
-		down => down,
 		ascii => asciiMode3,
 		ledsmode3 => ledsmode3,
 		memoryDataInMode3 => memoryDataInMode3,
