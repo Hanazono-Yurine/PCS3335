@@ -264,7 +264,7 @@ begin
     dataTempCounterClock <= '1' when (state = S_update1 and dataTempCounterValue /= "101" ) or (state = S_update2 and dataTempCounterValue /= "000" ) else '0'; -- da um pulso de clock quando ta nos estados update
 
 
-    dataTempCounterUp <= '1' when state = S_update1 else
+    dataTempCounterUp <= '1' when state = S_update1 or state = S_storeTemp else
                         '0' when state = S_update2 or state = S_deleteTemp else -- tem que mudar o valor de up um pouco antes de dar o pulso de clock no contador
                         '1'; 
     

@@ -180,7 +180,7 @@ begin
 
 	num1In <= memoryDataOut when state = S_storeNum1 else num1Value;
 
-	Number2_BCD: shiftregister -- armazena o 1 operando
+	Number2_BCD: shiftregister -- armazena o 2 operando
     generic map (
         WIDTH => 21
     )
@@ -224,8 +224,8 @@ begin
 
 	binResultSelected <= binResultAdd when asciiOpValue = "1000001" else -- F1 - soma
 						binResultSub when asciiOpValue = "1000010" else -- F2 - subtracao
-						binResultmult(17 downto 0) when asciiOpValue = "1000100" else -- F3 - multiplicacao 
-						binResultDiv; -- F4 - divisao
+						binResultDiv when asciiOpValue = "1000100" else -- F3 - multiplicacao 
+						binResultmult(17 downto 0) ; -- F4 - divisao
 
 
 	bin_to_BCD_inst: entity work.bin_to_BCD

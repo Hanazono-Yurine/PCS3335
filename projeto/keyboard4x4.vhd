@@ -93,7 +93,7 @@ begin
         data_o => valueFreezeCounter
     );
 	
-	wantedValueFreezeCounter <= (others => '1') ;
+	wantedValueFreezeCounter <= "10111" ;
 
     enFreezeCounter <= '0' when valueFreezeCounter = wantedValueFreezeCounter else '1'; -- trava o contador quando chega no valor maximo
 

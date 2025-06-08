@@ -301,7 +301,7 @@ begin
     )
     port map (
         clock  => stackSizeCounterClock,
-        reset  => reset,
+        reset  => '0',
         enable => '1',
         load   => '0',
         up     => stackSizeCounterUp,
@@ -428,8 +428,8 @@ begin
     ascii2seg_inst6: ascii2seg
 	port map(
 		off => '0',
-		--asc => ascii_input6, 
-		asc => ascii,
+		asc => ascii_input6, 
+		--asc => ascii,
 		seg => display7seg6,
 		dot => open
 	);
