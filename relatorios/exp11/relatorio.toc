@@ -1,0 +1,25 @@
+\contentsline {section}{\numberline {1}Introdução}{3}{}%
+\contentsline {section}{\numberline {2}Noções gerais sobre a calculadora}{3}{}%
+\contentsline {subsection}{\numberline {2.1}Memória}{3}{}%
+\contentsline {subsection}{\numberline {2.2}Notação Polonesa Inversa}{4}{}%
+\contentsline {subsection}{\numberline {2.3}Modos de funcionamento}{4}{}%
+\contentsline {subsection}{\numberline {2.4}Outras características}{5}{}%
+\contentsline {section}{\numberline {3}Manual}{5}{}%
+\contentsline {subsection}{\numberline {3.1}Menu inicial}{5}{}%
+\contentsline {subsection}{\numberline {3.2}Modo 1}{6}{}%
+\contentsline {subsection}{\numberline {3.3}Modo 2}{6}{}%
+\contentsline {subsection}{\numberline {3.4}Modo 3}{7}{}%
+\contentsline {section}{\numberline {4}Funcionamento do circuito}{8}{}%
+\contentsline {subsection}{\numberline {4.1}\texttt {calculator}}{8}{}%
+\contentsline {subsection}{\numberline {4.2}\texttt {keyboard4x4}}{9}{}%
+\contentsline {subsection}{\numberline {4.3}\texttt {memory}}{10}{}%
+\contentsline {subsection}{\numberline {4.4}\texttt {mode1}}{10}{}%
+\contentsline {subsection}{\numberline {4.5}\texttt {mode2}}{12}{}%
+\contentsline {subsection}{\numberline {4.6}\texttt {mode3}}{13}{}%
+\contentsline {subsection}{\numberline {4.7}\texttt {BCD\_to\_bin\_UNSIGNED}}{15}{}%
+\contentsline {subsection}{\numberline {4.8}\texttt {BCD\_to\_bin}}{15}{}%
+\contentsline {subsection}{\numberline {4.9}\texttt {bin\_to\_BCD\_UNSIGNED}}{15}{}%
+\contentsline {subsection}{\numberline {4.10}\texttt {bin\_to\_BCD}}{17}{}%
+\contentsline {section}{\numberline {5}Implementação e Testes}{17}{}%
+\contentsline {subsection}{\numberline {5.1}Testes}{18}{}%
+\contentsline {section}{\numberline {6}Anexos}{18}{}%

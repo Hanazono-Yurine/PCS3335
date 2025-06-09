@@ -8,8 +8,6 @@ entity calculator is
 
 		c : out std_logic_vector(3 downto 0);
         l : in std_logic_vector(3 downto 0);
-		
-		up, down : in std_logic := '0';
 
         leds : out std_logic_vector (9 downto 0);
 

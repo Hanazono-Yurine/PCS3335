@@ -38,6 +38,9 @@
 \renewcommand{\lstlistingname}{Código}%Muda o termo "Listing":  Listing -> Código
 \renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Códigos
 
+% incluir aquivos PDF
+\usepackage{pdfpages}
+
 
 \newcommand{\unit}[1]{\ensuremath{\, \mathrm{#1}}} % comando pra tirar do math mode a unidade de medida
 
@@ -48,7 +51,7 @@
 
 \title{
 	Laboratório Digital A - PCS3335
-	\\  Planejamento da Experiência 11
+	\\  Relatório da Experiência 11 - Projeto da disciplina: Calculadora
 }
 
 \author{
@@ -65,42 +68,512 @@
 \begin{document}
 	
 	\maketitle
+	\newpage
 	
-	\section*{Planejamento: Finalização do Projeto} 
+	\tableofcontents
+	\newpage
 	
-	Nessa experiência iremos finalizar e testar a versão final do projeto.
+	\section{Introdução}
 	
-	\section*{Modos de funcionamento}
+	O projeto realizado consiste no desenvolvimento do código VHDL de uma calculadora e a sua aplicação em uma FPGA.
+	A calculadora tem funcionamento baseado em Notação Polonesa Inversa e possui uma memória. 
+	Foi utilizado um teclado de membrana matricial 4x4 como teclado da calculadora para a sua utilização.
+	Os requisito para o projeto da disciplina eram: utilizar uma memória, ter uma Maquina de estados e ter um circuito combinatório não trivial.
+	Portando, todos os requisitos foram alcançados com o projeto realizado.
+	A figura \ref{fig:fpga} mostra a Calculadora implementada na FPGA.
 	
-	A calculadora terá 3 modos de funcionamento:
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/fpga_modo3.jpg}
+		\caption{Calculadora implementada na FPGA.}
+		\label{fig:fpga}
+	\end{figure}
 	
-	\subsection*{Modo 1: armazenamento de números na memoria como uma pilha}
-	No 1° modo o usuário apenas armazenaria números na memoria, como se estivesse adicionando valores ao topo de uma pilha.
+	\section{Noções gerais sobre a calculadora}
+	\label{sec:nocoes}
 	
-	\subsection*{Modo 2: realização de operações aritméticas com os valores da pilha}
-	No 2° modo o usuário apenas realizaria operações aritméticas com os valores que já estiverem na armazenados na memoria. Ao selecionar 
-	uma operação aritméticas, a calculadora pegaria os 2 números mais ao topo da pilha, realizaria a operação entre eles, removeria esses 2 números da 
+	Agora será detalhado características gerais sobre a calculadora.
+	
+	\subsection{Memória}
+	
+	A memória armazena números de -99.999 até 99.999. A lógica da memória funciona como uma pilha: cada novo número armazenado na memória é inserido no topo
+	da pilha, e os números são removidos é retirado do topo da pilha. Essa lógica de funcionamento ajuda a implementação da Notação Polonesa Inversa.
+	\par
+	Os números são armazenados na memória no formato BCD (\textit{Binary Coded Decimal}). Esse formato foi utilizado pois facilita muito para exibir valores
+	decimais em displays de 7 segmentos.
+	A memória implementada tem comprimento de 16 palavras, sendo cada palavra de 21 bits. O ultimo bit da palavra armazena no sinal: valor 1 para sinal
+	negativo, valor 0 para sinal positivo. Os 20 bits restantes armazenam os 5 digitos decimais em BCD. Por exemplo, o número -09.508 será a palavra:
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{c|cccc|cccc|cccc|cccc|cccc}
+			Sinal                   & \multicolumn{4}{c|}{Digito 4}                                                & \multicolumn{4}{c|}{Digito 3}                                                & \multicolumn{4}{c|}{Digito 2}                                                & \multicolumn{4}{c|}{Digito 1}                                                & \multicolumn{4}{c}{Digito 0}                                                                      \\ \hline
+			\multicolumn{1}{|c|}{1} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & 0 & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & 1 & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{0} & 1 & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & 0 & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} \\ \hline
+		\end{tabular}
+		\caption{Valor binário de como o número -09.508 é armazenado.}
+	\end{table}
+	
+	\subsection{Notação Polonesa Inversa}
+	
+	A lógica de Notação Polonesa Inversa foi escolhida para poder-se realizar expressões matemáticas na calculadora sem o uso de parenteses para indicar
+	precedência entre as operações. Por exemplo, a expressão
+	\[
+	((5+2) \times 6)-(34/(8+7))
+	\]
+	em Notação Polonesa Inversa é a sequência:
+	\[
+	5, 2, +, 6, \times, 34, 8, 7, +, /, -
+	\]
+	
+	A lógica pode ser melhor compreendida pelo diagrama da figura \ref{fig:diag_pilha}.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/diagrama_pilha.pdf}
+		\caption{Diagrama que mostra a evolução da pilha no exemplo.}
+		\label{fig:diag_pilha}
+	\end{figure}
+	
+	É importante notar que as operações de subtração e divisão são realizados seguindo a lógica:
+	
+	\begin{itemize}
+		\item Subtração: [Valor antes do topo da pilha] - [Valor no topo da pilha]
+		
+		\item Divisão: [Valor antes do topo da pilha] / [Valor no topo da pilha]
+	\end{itemize}
+	
+	Observe que a operação de divisão resulta apenas na parte inteira do resultado.
+	
+	\subsection{Modos de funcionamento}
+	
+	A calculadora é dividida em 3 modos de funcionamento para facilitar a usabilidade.
+	
+	\subsubsection*{Modo 1: armazenamento de números na memória}
+	No 1° modo o usuário apenas armazena números na memória, adicionando valores ao topo da pilha.
+	
+	\subsubsection*{Modo 2: realização de operações aritméticas com os valores da pilha}
+	No 2° modo o usuário apenas realiza operações aritméticas com os valores que já estão na armazenados na memoria. Ao selecionar 
+	uma operação aritméticas, a calculadora pegar os 2 números mais ao topo da pilha, realizaria a operação entre eles, remove esses 2 números da 
 	pilha, e armazenaria no topo da pilha o resultado da operação.
 	
-	\subsection*{Modo 3: exibição dos valores da pilha}
+	\subsubsection*{Modo 3: exibição dos valores da pilha}
 	No 3° modo o usuário poderá ler os valores que ja estão armazenados na memoria.
 	
-	 \begin{figure}[H]
-	 	\centering
-	 	\includegraphics[width=1\linewidth]{images/RLT.png}
-	 	\caption{RLT da entidade top level.}
-	 	\label{fig:RLT}
-	 \end{figure}
-	 
-	 Objetivos:
-	 
-	 \begin{itemize}
-	 	\item Testar os 3 modos de funcionamento da calculadora.
-	 	
-	 \end{itemize}
+	\subsection{Outras características}
 	
-	\section*{Resultados}
+	\begin{itemize}
+		\item Somente é possível inserir e realizar operações aritméticas com números reais inteiros com sinal.
+		
+		\item A operação de divisão resulta no valor inteiro da divisão.
+		
+		\item A calculadora não trata de casos de overflow nas operações aritméticas. Caso o resultado de alguma operação ultrapasse o valor máximo (-99.999 até 99.999),
+		um valor incorreto será armazenado na memória.
+		
+		\item O uso da calculadora é realizado através de um teclado de membrana matricial 4x4 e das chaves da FPGA, como mostrado na figura \ref{fig:fpga}.
+	\end{itemize}
 	
+	\section{Manual}
+	
+	Nessa seção será detalhado como utilizar a calculadora tendo ela implementada numa FPGA com o teclado de membrana matricial 4x4.
+	
+	\subsection{Menu inicial}
+	
+	Ao iniciar a calculadora, ela estará no menu inicial, onde exibirá "SELECT" nos displays de 7 segmentos, assim como mostrado a figura \ref{fig:fpga_menu}.
+	A parti desse menu é possível ir para os modos 1, 2 e 3. Para ir ao modo desejado, basta aperta o número do modo no teclado.
+	\par
+	Estando em um dos modos de funcionamento, para voltar ao menu inicial coloque o chave 0 da FPGA (SW0) no valor Lógico 1. Ao sair de um modo pela chave 0, o modo 
+	não é reiniciado. Ou seja, ao sair de um modo e voltar para ele, ele continuará na mesma situação ao ter saído dele.
+	\par
+	A chave 9 da FPGA (SW1), ao ser ativada reseta a calculadora, reiniciando todos so modos (colocando todos seus contadores e registradores no valor inicial) e 
+	vai para o menu inicial. Contudo, a memoria não é reiniciada ao ativar a chave 9.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/fpga_menu.jpg}
+		\caption{Calculadora no menu inicial.}
+		\label{fig:fpga_menu}
+	\end{figure}
+	
+	\subsection{Modo 1}
+	
+	O modo 1 permite o usuário digitar valores e armazenar eles na memória.
+	Ao iniciar o modo 1, o usuário pode aperta digitar o número desejado utilizando o teclado de membrana. O valor digitado vai sendo exibido nos displays de 7
+	segmentos. O display mais a esquerda mostra o sinal do número. Os 5 displays mais a direita mostram o valor do número.
+	\par
+	Os dígitos apertados no teclado serão alocados do menos significativo para o mais significativo no número. 
+	O display que mostra "\_", indica que o próximo digito a ser
+	teclado entrará naquela posição e atualmente o valor do digito nessa posição é 0. 
+	A figura \ref{fig:fpga_modo1} mostra o modo 1 em funcionamento. 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/fpga_modo1.jpg}
+		\caption{Calculadora no modo 1 de funcionamento como o valor -00502 digitado.}
+		\label{fig:fpga_modo1}
+	\end{figure}
+	
+	O botão "C" no teclado apaga o ultimo digito do número.
+	O botão "F1" no teclado inverte o sinal do número.
+	O botão "E" no teclado armazena o valor digitado na memória, colocando-o no topo da pilha, e zera o valor mostrado nos displays.
+	\par
+	Não é possível digitar um número maior que 5 dígitos. Não é possível utilizar o botão apagar quando há nenhum digito no número.
+	
+	\subsection{Modo 2}
+	
+	O modo 2 permite que o usuário realize operações aritméticas com os valores armazenados na memória.
+	Nesse modo, os displays de 7 seg. sempre exibiram o número no topo da pilha.
+	As operações aritméticas são realizadas com os 2 números mais ao topo da pilha, como explicado na seção \ref{sec:nocoes}.
+	Para realizar as operações usa-se os botões:
+	\begin{itemize}
+		\item F1: adição
+		\item F2: subtração
+		\item F3: divisão
+		\item F4: multiplicação
+	\end{itemize}
+	As operações aritméticas somente serão realizadas quando houver pelo menos 2 números armazenados na memória.
+	
+	\subsection{Modo 3}
+	
+	O modo 3 permite que o usuário veja os valores já armazenados na memória. Ao iniciar o modo 3, ele exibe nos displays de 7 seg. o número armazenado na 
+	posição 0 da memória. 
+	Ao aperta os botões:
+	\begin{itemize}
+		\item 8: a posição do número que será mostrado nos display é incrementado em 1. Ou seja, se o número da posição 3 era exibido, ao pressionar "8", será exibido o
+		número da posição 4.
+		\item 2: a posição do número que será mostrado nos display é diminuído em 1. Ou seja, se o número da posição 3 era exibido, ao pressionar "2", será exibido o
+		número da posição 2.
+	\end{itemize}
+	Lembrando que a memória consegue armazenar 16 números, que vão da posição 0 até a posição 15.
+	A figura \ref{fig:fpga_modo3} mostra a calculadora no modo 3 exibindo o número armazenado na posição 1 da memória.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/fpga_modo3.jpg}
+		\caption{Calculadora no modo 3 de funcionamento.}
+		\label{fig:fpga_modo3}
+	\end{figure}
+	
+	Importante destacar que esse modo funciona independente da pilha. Esse modo mostra todas as 16 posições da memória, independente de quanto valores há na pilha.
+	Assim, mostrando valores que não estão na pilha. Contudo, o valor inicial para todas as posições da memória é zero. 
+	E também, ao remover um elemento da pilha, a posição da memória que esse elemento ocupava vai ficar com valor zero.
+	Portando, posições da memória que não estão sendo utilizadas na pilha sempre exibirão valor zero.
+	\par
+	Os leds nesse modo mostram:
+	\begin{itemize}
+		\item Os 4 primeiros leds da FPGA (leds 0, 1, 2 e 3) exibem o valor binário da posição do número que está sendo atualmente exibido nos displays.
+		\item Os 4 próximos leds (leds 4, 5, 6 e 7) exibem o valor binário de quantos números há armazenados na pilha.
+	\end{itemize}
+	Por exemplo, na figura \ref{fig:fpga_modo3}, os leds mostram que há 3 números na pilha e o valor atualmente mostrado no display é a posição 1 da memória.
+	
+	
+	\section{Funcionamento do circuito}
+	
+	Nessa seção será explicado de forma simplificada o funcionamento e o circuito de cada entidade implementada no código VHDL da calculadora.
+	O código VHDL foi compilado e implementado na FPGA utilizando o software Quartus.
+	A calculadora possui as entidades:
+	
+	\begin{itemize}
+		\item \texttt{ascii2seg}
+		\item \texttt{baudRateGenerator}
+		\item \texttt{bcd\_asciiConverter}
+		\item \texttt{BCD\_to\_bin\_UNSIGNED}
+		\item \texttt{BCD\_to\_bin}
+		\item \texttt{bin\_to\_BCD\_UNSIGNED}
+		\item \texttt{bin\_to\_BCD}
+		\item \texttt{calculator} (top-level)
+		\item \texttt{counter}
+		\item \texttt{keyboard4x4}
+		\item \texttt{memory}
+		\item \texttt{mode1}
+		\item \texttt{mode2}
+		\item \texttt{mode3}
+		\item \texttt{shiftregister}
+		\item \texttt{shiftregisterKeyboard}
+	\end{itemize}
+	
+	As entidades \texttt{ascii2seg}, \texttt{baudRateGenerator}, \texttt{counter} e \texttt{shiftregister} são as mesmas utilizadas nas 
+	experiencias anteriores que implementavam o modulo UART.
+	\par
+	A entidade \texttt{shiftregisterKeyboard} é praticamente idêntica ao \texttt{shiftregister}, a única diferença é que esse registrador
+	inicia o com valor "011111..." ao invés de "00000...". Ele é utilizado da entidade texttt{keyboard4x4}.
+	
+	\subsection{\texttt{calculator}}
+	
+	A entidade \texttt{calculator} é a top-level. A lógica dela controla qual entidade esta sendo usado no momento.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/rtl_calculator_zoomin.pdf}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_calculator_zoomin}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/rtl_calculadora.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_calculadora}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/fsm_calculadora.png}
+		\caption{FSM da entidade.}
+		\label{fig:fsm_calculadora}
+	\end{figure}
+	
+	\subsection{\texttt{keyboard4x4}}
+	
+	A entidade \texttt{keyboard4x4} controla o teclado de membrana matricial 4x4. Ela detecta quando uma tecla é apertada e manda 
+	o ASCII dessa teclada para as outras entidades.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.4\linewidth]{images/rtl_keyboard.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_keyboard}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/rtl_keyboard_zoom.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_keyboard_zoom}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{images/fsm_keyboard.png}
+		\caption{FSM da entidade.}
+		\label{fig:fsm_keyboard}
+	\end{figure}
+	
+	\subsection{\texttt{memory}}
+	
+	A entidade \texttt{memory} instancia a memoria utilizada pela calculadora. Na figura \ref{fig:rtl_memory} é possível observar 
+	um bloxo roxo chamado "memoria\_ram". Esse bloco foi a memória que o Quartus instanciou.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/rtl_memory.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_memory}
+	\end{figure}
+	
+	\subsection{\texttt{mode1}}
+	
+	A entidade \texttt{mode1} implementa o modo 1 de funcionamento.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/rtl_mode1.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_mode1}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/rtl_mode1_zoom.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_mode1_zoom}
+	\end{figure}
+	
+	Seguindo a FSM da entidade na figura \ref{fig:fsm_mode1} é possível realizar 3 ações: Adicionar um digito ao registrador, 
+	remover um digito do registrador e armazenar o valor do registrado na memória.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/fsm_mode1.png}
+		\caption{FSM da entidade.}
+		\label{fig:fsm_mode1}
+	\end{figure}
+	
+	
+	
+	\subsection{\texttt{mode2}}
+	
+	A entidade \texttt{mode2} implementa o modo 2 de funcionamento.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.5\linewidth]{images/rtl_mode2.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_mode2}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/rtl_mode2_zoom.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_mode2_zoom}
+	\end{figure}
+	
+	Seguindo a FSM da entidade na figura \ref{fig:fsm_mode2} é possível perceber a sequencia de passos:
+	armazenar temporariamente a operação selecionada, armazenar temporariamente os 2 operandos, transformar o resultado da operação 
+	de binário para BCD e atualizar a memória com o valor do resultado.
+	\par
+	É importante destacar que as operações aritméticas em binário, e a conversão de BCD para binario utiliza circuitos combinatórios, logo 
+	não é necessário um estado para esses passos.
+	
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/fsm_mode2.png}
+		\caption{FSM da entidade.}
+		\label{fig:fsm_mode2}
+	\end{figure}
+	
+	
+	\subsection{\texttt{mode3}}
+	
+	A entidade \texttt{mode3} implementa o modo 3 de funcionamento.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.5\linewidth]{images/rtl_mode3.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_mode3}
+	\end{figure}
+	
+	Na RTL da entidade na figura \ref{fig:rtl_mode3_zoom} é possível que há um contador que armazena o valor da posição que está 
+	sendo exibida atualmente nos display. 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{images/rtl_mode3_zoom.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_mode3_zoom}
+	\end{figure}
+	
+	Seguindo a FSM da entidade na figura \ref{fig:fsm_mode3}: de acordo com a tecla apertada, o valor do contador mencionado anteriormente 
+	aumenta ou diminui em uma unidade.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/fsm_mode3.png}
+		\caption{FSM da entidade.}
+		\label{fig:fsm_mode3}
+	\end{figure}
+	
+	
+	
+	\subsection{\texttt{BCD\_to\_bin\_UNSIGNED}}
+	
+	A entidade \texttt{BCD\_to\_bin\_UNSIGNED} é um circuito combinatório que transforma BCD de 21 bits em binário de 18 bits SEM SINAL.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/rtl_bcdToBin_un.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_bcdToBin_un}
+	\end{figure}
+	
+	
+	
+	\subsection{\texttt{BCD\_to\_bin}}
+	
+	A entidade \texttt{BCD\_to\_bin} é o circuito combinatório que acrescenta a lógica de sinal (complemento de 2) à 
+	saída do \texttt{BCD\_to\_bin\_UNSIGNED}.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/rtl_bcdToBin.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_bcdToBin}
+	\end{figure}
+	
+	
+	
+	\subsection{\texttt{bin\_to\_BCD\_UNSIGNED}}
+	
+	A entidade \texttt{bin\_to\_BCD\_UNSIGNED} implementa o algoritomo Double dabble para converter de binario para BCD.
+	Os valores binarios na entrada da entidade são binarios SEM SINAL.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/rtl_binToBcd_un_zoomin.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_binToBcd_un_zoomin}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{images/rtl_binToBcd_un.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_binToBcd_un}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\linewidth]{images/fsm_binToBCD.png}
+		\caption{FSM da entidade.}
+		\label{fig:fsm_binToBCD}
+	\end{figure}
+	
+	
+	
+	\subsection{\texttt{bin\_to\_BCD}}
+	
+	A entidade \texttt{bin\_to\_BCD} instancia a entidade \texttt{bin\_to\_BCD\_UNSIGNED}. Ela realiza a lógica de transformar 
+	um binário COM SINAL em um SEM SINAL, passar esse novo binaria para a entidade \texttt{bin\_to\_BCD\_UNSIGNED}, pegar a 
+	saída BCD SEM SINAL de \texttt{bin\_to\_BCD\_UNSIGNED} e aplicar o sinal a esse BCD conforme o binário COM SINAL original.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\linewidth]{images/rtl_binToBcd.png}
+		\caption{RTL da entidade.}
+		\label{fig:rtl_binToBcd}
+	\end{figure}
+
+	
+	\section{Implementação e Testes}
+	
+	A implementação da calculadora na FPGA realizada pelo grupo utilizou a seguinte pinagem:
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{|l|l|l|}
+				\hline
+				c{[}3{]}            & PIN\_P16  & Output \\ \hline
+				c{[}2{]}            & PIN\_L22  & Output \\ \hline
+				c{[}1{]}            & PIN\_M22  & Output \\ \hline
+				c{[}0{]}            & PIN\_N20  & Output \\ \hline
+				clock50M            & PIN\_M9   & Input  \\ \hline
+				display7seg1{[}6{]} & PIN\_AA22 & Output \\ \hline
+				... pinos dos display de 7 seg. da FPGA ... & ...       & Output \\ \hline
+				display7seg6{[}0{]} & PIN\_N9   & Output \\ \hline
+				goToMenu            & PIN\_U13  & Input  \\ \hline
+				l{[}3{]}            & PIN\_L19  & Input  \\ \hline
+				l{[}2{]}            & PIN\_L18  & Input  \\ \hline
+				l{[}1{]}            & PIN\_N21  & Input  \\ \hline
+				l{[}0{]}            & PIN\_R21  & Input  \\ \hline
+				leds{[}9{]}         & PIN\_L2   & Output \\ \hline
+				... pinos dos leds da FPGA ...  & ...       & Output \\ \hline
+				leds{[}0{]}         & PIN\_AA2  & Output \\ \hline
+				pinDebug            & PIN\_N16  & Output \\ \hline
+				reset               & PIN\_AB12 & Input  \\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+	
+	\subsection{Testes}
+	
+	O grupo testou os 3 modos de funcionamento e todos apresentaram funcionamento correto.
+	
+	Observações: o grupo percebeu certa instabilidade no teclado de membrana matricial utilizado.
+	Em algumas situações ele não respondia corretamente, gerando um funcionamento incorreto na calculadora.
+	
+	\section{Anexos}
+	
+	Nas paginas a seguir é apresentado o RTL de algumas entidades em imagens vetoriais para a melhor visualização.
+	
+	\includepdf[pages=-]{images/rtl_calculadora_pdf.pdf}
+	
+	\includepdf[]{images/rtl_keyboard_pdf.pdf}
+	
+	\includepdf[]{images/rtl_mode1_pdf.pdf}
+	
+	\includepdf[]{images/rtl_mode2_pdf.pdf}
 
 	
 	
